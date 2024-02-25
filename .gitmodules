@@ -1,3 +1,4 @@
 [submodule "mbed_src/mbed-os"]
 	path = mbed_src/mbed-os
 	url = https://github.com/ARMmbed/mbed-os
+    ignore = dirty
