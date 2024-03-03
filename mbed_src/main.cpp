@@ -16,7 +16,7 @@ static size_t wavFreq = AUDIO_SAMPLING_FREQUENCY;
 
 // DO NOT CHANGE BELOW
 
-const int BITS_PER_SAMPLE = 16; // This needs to correspond to PCM_buffer's type
+const int BITS_PER_SAMPLE = 16; // This needs to correspond to PCM_buffer's type. I think 16 is the only value supported, so don't change.
 // Sound data is normally read in pairs of 2 bytes (16 bits). PCM_BUFFER_LEN is how many bytes of data the BSP stores naturally.
 // The BSP normally reads PCM_BUFFER_LEN/2 bytes to fill up the PCM_Buffer. It does this twice, one for each half of the PCM_Buffer array.
 // This is why we have 2 callbacks, one for each half. 
@@ -90,16 +90,12 @@ void target_audio_buffer_full() {
     printf("\n");
 }
 
-
-
 /**
 * @brief  Half Transfer user callback, called by BSP functions.
 * @param  None
 * @retval None
 */
 void BSP_AUDIO_IN_HalfTransfer_CallBack(uint32_t Instance) {
-
-
     if ((TARGET_AUDIO_BUFFER_IX + nb_samples) > TARGET_AUDIO_BUFFER_NB_SAMPLES) {
         return;
     }
@@ -120,7 +116,6 @@ void BSP_AUDIO_IN_HalfTransfer_CallBack(uint32_t Instance) {
 * @retval None
 */
 void BSP_AUDIO_IN_TransferComplete_CallBack(uint32_t Instance) {
-
     if ((TARGET_AUDIO_BUFFER_IX + nb_samples) > TARGET_AUDIO_BUFFER_NB_SAMPLES) {
         return;
     }
@@ -200,9 +195,6 @@ int main()
     } else {
         printf("OK Audio Init\t(Audio Freq=%ld)\r\n", wavFreq);
     }
-
-
-    // hit the blue button to record a message
 
     record_audio();
     queue.call_every(2000ms, print_audio);
