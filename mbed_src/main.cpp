@@ -5,11 +5,13 @@
 
 #include "mbed.h"
 #include "stm32l475e_iot01_audio.h"
+#include "companders.h"
+#include <cstdint>
 
 
 // # of seconds of audio to record before sending through Bluetooth
 // Can change these values to find optimal sound packet size
-const float num_seconds = 2;
+const float num_seconds = 1;
 static size_t wavFreq = AUDIO_SAMPLING_FREQUENCY;
 // NOTE: too high of above values causes there to be not enough memory
 
@@ -38,6 +40,21 @@ static size_t fileSize = 44 + dataSize;
 static BSP_AUDIO_Init_t MicParams;
 static EventQueue queue;
 
+Timer t;
+bool compressionOn = true;
+static uint8_t compressedBuf[16000];
+#define PRIu16 "hu"
+/*
+Compression halves the size of the data
+
+Compression is currently set to store the compressed audio in a seperate smaller buffer (to send over bluetooth)
+In order to hear the audio compressed and decompressed for testing, do the following:
+- Uncomment the audio decompression code
+- Uncomment TARGET_AUDIO_BUFFER[ix] = DIO_LinearToALaw(TARGET_AUDIO_BUFFER[ix]);
+- Comment out compressedBuf[ix] = DIO_LinearToALaw(TARGET_AUDIO_BUFFER[ix]);
+- Set if (compressionOn) on line 125 to be false all the time (so if (false))
+- remove the spaces from the print out for the wav files.
+*/
 
 // callback that gets invoked when TARGET_AUDIO_BUFFER is full
 void target_audio_buffer_full() {
@@ -49,6 +66,36 @@ void target_audio_buffer_full() {
     else {
         printf("OK Audio Pause\n");
     }
+
+    t.stop();
+    printf("Recording time: %llu ms\n", t.elapsed_time().count());
+    t.reset();
+
+    // compression
+
+    t.start();
+
+    if (compressionOn) {
+        for (size_t ix = 0; ix < TARGET_AUDIO_BUFFER_NB_SAMPLES; ix++) {
+            //printf("Decompressed: %hu", TARGET_AUDIO_BUFFER[ix]);
+            compressedBuf[ix] = DIO_LinearToALaw(TARGET_AUDIO_BUFFER[ix]);
+            // TARGET_AUDIO_BUFFER[ix] = DIO_LinearToALaw(TARGET_AUDIO_BUFFER[ix]);
+            // printf("Compressed: %hu ", compressed_buf[ix]);
+        }
+    }
+
+    t.stop();
+    printf("Compression time: %llu ms\n", t.elapsed_time().count());
+
+    // Decompression code
+    // compressed audio is incomprehensible
+    // if (compressionOn) {
+    //     for (size_t ix = 0; ix < TARGET_AUDIO_BUFFER_NB_SAMPLES; ix++) {
+    //         // printf("Compressed: %hu", TARGET_AUDIO_BUFFER[ix]);
+    //         TARGET_AUDIO_BUFFER[ix] = DIO_ALawToLinear(TARGET_AUDIO_BUFFER[ix]);
+    //         // printf("Decompressed: %hu", TARGET_AUDIO_BUFFER[ix]);
+    //     }
+    // }
 
     // create WAV file
 
@@ -78,14 +125,24 @@ void target_audio_buffer_full() {
         printf("%02x ", wav_header[ix]);
     }
 
-    uint8_t *buf = (uint8_t*)TARGET_AUDIO_BUFFER;
-    for (size_t ix = 0; ix < TARGET_AUDIO_BUFFER_NB_SAMPLES * 2; ix++) {
-        printf("%02x ", buf[ix]);
+    if (compressionOn) {
+        for (size_t ix = 0; ix < TARGET_AUDIO_BUFFER_NB_SAMPLES; ix++) {
+            printf("%02x ", compressedBuf[ix]);
+        }
     }
+    else {
+        uint8_t *buf = (uint8_t*)TARGET_AUDIO_BUFFER;
+        for (size_t ix = 0; ix < TARGET_AUDIO_BUFFER_NB_SAMPLES * 2; ix++) {
+            printf("%02x ", buf[ix]);
+        }
+    }
+    
 
     // TODO: Send data in TARGET_AUDIO_BUFFER to bluetooth
+    
+    
 
-
+    
     TARGET_AUDIO_BUFFER_IX = 0;
     printf("\n");
 }
@@ -141,8 +198,9 @@ void BSP_AUDIO_IN_Error_CallBack(uint32_t Instance) {
 
 
 void print_audio(){
-    for(int i = 0; i < PCM_Buffer_arr_len; i++){
-        printf("%u ", PCM_Buffer[i]);
+    uint8_t *buf = (uint8_t*)PCM_Buffer;
+    for(int i = 0; i < PCM_Buffer_arr_len * 2; i++){
+        printf("%02x ", buf[i]);
     }
     printf("\n");
 }
@@ -172,7 +230,7 @@ void record_audio(){
         printf("OK Audio Record\n");
     }
 
-
+    t.start();
 }
 
 
@@ -199,4 +257,4 @@ int main()
     record_audio();
     queue.call_every(2000ms, print_audio);
     queue.dispatch_forever();
-}
+ }
