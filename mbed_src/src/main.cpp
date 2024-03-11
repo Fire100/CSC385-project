@@ -7,6 +7,11 @@
 #include "stm32l475e_iot01_audio.h"
 #include "companders.h"
 #include <cstdint>
+#include "mainQueue.hpp"
+#include "bluetooth_handler.hpp"
+
+
+EventQueue mainQueue;
 
 
 // # of seconds of audio to record before sending through Bluetooth
@@ -38,7 +43,7 @@ static size_t dataSize = (TARGET_AUDIO_BUFFER_NB_SAMPLES * sizeof(int16_t)/sizeo
 static size_t fileSize = 44 + dataSize;
 
 static BSP_AUDIO_Init_t MicParams;
-static EventQueue queue;
+
 
 Timer t;
 bool compressionOn = true;
@@ -143,7 +148,7 @@ void target_audio_buffer_full() {
     
 
     
-    TARGET_AUDIO_BUFFER_IX = 0;
+    TARGET_AUDIO_BUFFER_IX = 0; // reset audio buffer idx to begin recording agiai
     printf("\n");
 }
 
@@ -162,7 +167,7 @@ void BSP_AUDIO_IN_HalfTransfer_CallBack(uint32_t Instance) {
     TARGET_AUDIO_BUFFER_IX += nb_samples;
 
     if (TARGET_AUDIO_BUFFER_IX >= TARGET_AUDIO_BUFFER_NB_SAMPLES) {
-        queue.call(&target_audio_buffer_full);
+        mainQueue.call(&target_audio_buffer_full);
         return;
     }
 }
@@ -182,7 +187,7 @@ void BSP_AUDIO_IN_TransferComplete_CallBack(uint32_t Instance) {
     TARGET_AUDIO_BUFFER_IX += nb_samples;
 
     if (TARGET_AUDIO_BUFFER_IX >= TARGET_AUDIO_BUFFER_NB_SAMPLES) {
-        queue.call(&target_audio_buffer_full);
+        mainQueue.call(&target_audio_buffer_full);
         return;
     }
 }
@@ -234,6 +239,22 @@ void record_audio(){
 }
 
 
+
+void init_bluetooth(){
+
+    // BluetoothHandler();
+    BluetoothHandler* bluetooth = new BluetoothHandler();
+
+    // TODO: add callback to myBluetooth to call "record_audio" once a connection is found
+    // bluetooth->onConnect(record_audio);
+
+    // TODO: add a callback on what to do when receiving data 
+    // bluetooth->onReceiveData(receive_func);
+
+    // TODO: connect to addresss
+    // bluetooth->connectTo(address);
+}
+
 int main()
 {
     printf("Hello from microphone demo\n");
@@ -254,7 +275,7 @@ int main()
         printf("OK Audio Init\t(Audio Freq=%ld)\r\n", wavFreq);
     }
 
-    record_audio();
-    queue.call_every(2000ms, print_audio);
-    queue.dispatch_forever();
+    // mainQueue.call_every(2000ms, print_audio);
+    init_bluetooth();
+    mainQueue.dispatch_forever();
  }
