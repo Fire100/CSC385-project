@@ -2,6 +2,7 @@
 #include "pretty_print.hpp"
 #include "bluetooth_handler.hpp"
 #include "mainQueue.hpp"
+#include "voice_service.hpp"
 
 static const ble::AdvertisingParameters advertising_params(
     // CTRL+Click on the advertising type below to see other types.
@@ -30,6 +31,7 @@ void advertise()
     data_builder.setFlags();
     
     data_builder.setName("Bluetooth Phone");
+    data_builder.setLocalService(VoiceService::VOICESERVICE_UUID);
 
     //  Use a "legacy" advertising handle
     error = _gap.setAdvertisingPayload(ble::LEGACY_ADVERTISING_HANDLE, data_builder.getAdvertisingData());
@@ -88,6 +90,8 @@ void schedule_ble_events(BLE::OnEventsToProcessCallbackContext *context)
 void init_bluetooth()
 {
     printf("Initializing Bluetooth\n");
+
+    VoiceService voiceService{};
 
     // The BLE class is a singleton
     BLE &ble = BLE::Instance();
