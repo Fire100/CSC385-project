@@ -240,20 +240,6 @@ void record_audio(){
 
 
 
-void init_bluetooth(){
-
-    // BluetoothHandler();
-    BluetoothHandler* bluetooth = new BluetoothHandler();
-
-    // TODO: add callback to myBluetooth to call "record_audio" once a connection is found
-    // bluetooth->onConnect(record_audio);
-
-    // TODO: add a callback on what to do when receiving data 
-    // bluetooth->onReceiveData(receive_func);
-
-    // TODO: connect to addresss
-    // bluetooth->connectTo(address);
-}
 
 int main()
 {
@@ -276,6 +262,7 @@ int main()
     }
 
     // mainQueue.call_every(2000ms, print_audio);
+
+    
     init_bluetooth();
-    mainQueue.dispatch_forever();
  }

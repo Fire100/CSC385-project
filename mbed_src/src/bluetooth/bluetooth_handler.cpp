@@ -14,7 +14,7 @@ static const ble::AdvertisingParameters advertising_params(
 
 
 
-void BluetoothHandler::advertise()
+void advertise()
 {
     BLE &ble = BLE::Instance();
     auto &_gap = ble.gap();
@@ -46,7 +46,7 @@ void BluetoothHandler::advertise()
 }
 
 
-void BluetoothHandler::on_init_complete(BLE::InitializationCompleteCallbackContext *event)
+void on_init_complete(BLE::InitializationCompleteCallbackContext *event)
 {
     if (event->error) {
         print_error(event->error, "Error during the initialisation");
@@ -76,17 +76,16 @@ void BluetoothHandler::on_init_complete(BLE::InitializationCompleteCallbackConte
 }
 
 
-
 /**
  * @brief Do not change this.
  */
-void BluetoothHandler::schedule_ble_events(BLE::OnEventsToProcessCallbackContext *context)
+void schedule_ble_events(BLE::OnEventsToProcessCallbackContext *context)
 {
     mainQueue.call(Callback<void()>(&context->ble, &BLE::processEvents));
 }
 
 
-BluetoothHandler::BluetoothHandler()
+void init_bluetooth()
 {
     printf("Initializing Bluetooth\n");
 
@@ -106,6 +105,7 @@ BluetoothHandler::BluetoothHandler()
     auto &gap = ble.gap();
     gap.setEventHandler(&handler);
 
-    printf("Done Initializing Bluetooth\n");
-
+    // NOTE: this must be here inside this function.
+    // Putting this outside the function does not work
+    mainQueue.dispatch_forever();
 }
