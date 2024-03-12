@@ -95,6 +95,9 @@ void init_bluetooth()
 
     // The BLE class is a singleton
     BLE &ble = BLE::Instance();
+
+    voiceService.start(ble, mainQueue);
+
     ble.onEventsToProcess(schedule_ble_events);
 
     // Initialize BLE and then call our own function

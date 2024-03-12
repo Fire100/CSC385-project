@@ -2,12 +2,13 @@
 #include "ble/BLE.h"
 #include "ble/Gap.h"
 #include <cstdint>
+#include "recordAudio.hpp"
 
 
 #ifndef VOICE_SERVICE
 #define VOICE_SERVICE
 
-class VoiceService{
+class VoiceService : ble::GattServer::EventHandler{
 
     public:
 
@@ -17,18 +18,32 @@ class VoiceService{
         static const uint32_t VOICESERVICE_SEND_AUDIO_UUID = 0xB003;
 
         VoiceService();
+        ~VoiceService() {};
+
+        void start(BLE &ble, events::EventQueue &event_queue);
 
         void sendAudio();
 
-        void recieveAudio();
+        virtual void onDataRead(const GattReadCallbackParams &params) override;
+
+        virtual void onDataWritten(const GattWriteCallbackParams &params) override;
+
+        virtual void onDataSent(const GattDataSentCallbackParams &params) override;
+        
     
     private:
-        ReadOnlyGattCharacteristic<int16_t> VOICESERVICE_START;
+        ReadOnlyGattCharacteristic<uint8_t> *VOICESERVICE_START;
+        uint8_t _voiceservice_start_value = 0;
 
-        ReadOnlyGattCharacteristic<uint16_t> VOICESERVICE_RECIEVE_AUDIO;
+        ReadOnlyGattCharacteristic<uint8_t> *VOICESERVICE_RECIEVE_AUDIO;
+        uint8_t _voiceservice_recieve_audio_value = 0;
 
-        ReadOnlyGattCharacteristic<uint16_t> VOICESERVICE_SEND_AUDIO;
+        ReadOnlyGattCharacteristic<uint8_t> *VOICESERVICE_SEND_AUDIO;
+        uint8_t _voiceservice_send_audio_value = 0;
+
+        int currentDataSent = 0;
 };
+
 
 
 #endif // VOICE_SERVICE

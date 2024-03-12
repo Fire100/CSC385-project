@@ -40,6 +40,7 @@ static BSP_AUDIO_Init_t MicParams;
 
 
 static uint8_t compressedBuf[16000];
+static bool dataUpdated = false;
 #define PRIu16 "hu"
 /*
 Compression halves the size of the data

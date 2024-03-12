@@ -34,6 +34,7 @@ public:
      * @brief Called when another connected evice disconnects from ours.
      */
     void onDisconnectionComplete(const ble::DisconnectionCompleteEvent &event) override;
+
 };
 
 #endif //CSC385_20221_LAB_4_HPP
