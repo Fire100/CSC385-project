@@ -3,15 +3,16 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-#include "mbed.h"
-#include "stm32l475e_iot01_audio.h"
-#include "companders.h"
-#include <cstdint>
-#include "mainQueue.hpp"
+// #include "mbed.h"
+// #include "stm32l475e_iot01_audio.h"
+// #include "companders.h"
+// #include <cstdint>
+// #include "mainQueue.hpp"
+#include "recordAudio.hpp"
 #include "bluetooth_handler.hpp"
-# include "recordAudio.hpp"
+#include "mainQueue.hpp"
 
-
+EventQueue mainQueue;
 int main()
 {
     printf("Hello from microphone demo\n");

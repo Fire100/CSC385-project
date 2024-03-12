@@ -1,5 +1,8 @@
 #include "recordAudio.hpp"
 
+Timer t;
+bool compressionOn = true;
+
 // callback that gets invoked when TARGET_AUDIO_BUFFER is full
 void target_audio_buffer_full() {
     // pause audio stream

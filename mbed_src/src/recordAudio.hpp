@@ -1,3 +1,4 @@
+#pragma once
 #include "companders.h"
 #include "mbed.h"
 #include "stm32l475e_iot01_audio.h"
@@ -36,11 +37,8 @@ static size_t fileSize = 44 + dataSize;
 static BSP_AUDIO_Init_t MicParams;
 
 
-EventQueue mainQueue;
 
 
-Timer t;
-bool compressionOn = true;
 static uint8_t compressedBuf[16000];
 #define PRIu16 "hu"
 /*
