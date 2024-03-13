@@ -2,7 +2,7 @@
 #include "pretty_print.hpp"
 #include "bluetooth_handler.hpp"
 #include "mainQueue.hpp"
-#include "voice_service.hpp"
+#include "voice_service_server.hpp"
 
 static const ble::AdvertisingParameters advertising_params(
     // CTRL+Click on the advertising type below to see other types.

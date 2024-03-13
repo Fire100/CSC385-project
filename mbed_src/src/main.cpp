@@ -33,7 +33,10 @@ int main()
         printf("OK Audio Init\t(Audio Freq=%ld)\r\n", wavFreq);
     }
 
+    // record_audio();
     // mainQueue.call_every(2000ms, print_audio);
+    // this is just here for testing, don't uncomment otherwise
+    // mainQueue.dispatch_forever();
 
     
     init_bluetooth();

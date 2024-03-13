@@ -49,43 +49,43 @@ void target_audio_buffer_full() {
 
     // create WAV file
 
-    // uint32_t byte_rate = wavFreq * BITS_PER_SAMPLE / 8; // (Sample Rate * BitsPerSample * Channels) / 8
-    // // TODO: probably don't send this via bluetooth since it's just constant time operations
-    // uint8_t wav_header[44] = {
-    //     0x52, 0x49, 0x46, 0x46, // RIFF
-    //     (uint8_t) (fileSize & 0xff), (uint8_t)((fileSize >> 8) & 0xff), (uint8_t)((fileSize >> 16) & 0xff), (uint8_t)((fileSize >> 24) & 0xff),
-    //     0x57, 0x41, 0x56, 0x45, // WAVE
-    //     0x66, 0x6d, 0x74, 0x20, // fmt
-    //     0x10, 0x00, 0x00, 0x00, // length of format data
-    //     0x01, 0x00, // type of format (1=PCM)
-    //     0x01, 0x00, // number of channels
-    //     (uint8_t)(wavFreq & 0xff), (uint8_t)((wavFreq >> 8) & 0xff), (uint8_t)((wavFreq >> 16) & 0xff), (uint8_t)((wavFreq >> 24) & 0xff),
-    //     (uint8_t)(byte_rate & 0xff), (uint8_t)((byte_rate >> 8) & 0xff), (uint8_t)((byte_rate >> 16) & 0xff), (uint8_t)((byte_rate >> 24) & 0xff),
-    //     (uint8_t)(BITS_PER_SAMPLE/8 & 0xff), (uint8_t)(BITS_PER_SAMPLE/8 >> 8 & 0xff), // (BITS_PER_SAMPLE * channels) / 8
-    //     (uint8_t)(BITS_PER_SAMPLE & 0xff), (uint8_t)(BITS_PER_SAMPLE >> 8 & 0xff), // BITS_PER_SAMPLE
-    //     0x64, 0x61, 0x74, 0x61, // data
-    //     (uint8_t)(dataSize & 0xff), (uint8_t)((dataSize >> 8) & 0xff), (uint8_t)((dataSize >> 16) & 0xff), (uint8_t)((dataSize >> 24) & 0xff),
-    // };
+    uint32_t byte_rate = wavFreq * BITS_PER_SAMPLE / 8; // (Sample Rate * BitsPerSample * Channels) / 8
+    // TODO: probably don't send this via bluetooth since it's just constant time operations
+    uint8_t wav_header[44] = {
+        0x52, 0x49, 0x46, 0x46, // RIFF
+        (uint8_t) (fileSize & 0xff), (uint8_t)((fileSize >> 8) & 0xff), (uint8_t)((fileSize >> 16) & 0xff), (uint8_t)((fileSize >> 24) & 0xff),
+        0x57, 0x41, 0x56, 0x45, // WAVE
+        0x66, 0x6d, 0x74, 0x20, // fmt
+        0x10, 0x00, 0x00, 0x00, // length of format data
+        0x01, 0x00, // type of format (1=PCM)
+        0x01, 0x00, // number of channels
+        (uint8_t)(wavFreq & 0xff), (uint8_t)((wavFreq >> 8) & 0xff), (uint8_t)((wavFreq >> 16) & 0xff), (uint8_t)((wavFreq >> 24) & 0xff),
+        (uint8_t)(byte_rate & 0xff), (uint8_t)((byte_rate >> 8) & 0xff), (uint8_t)((byte_rate >> 16) & 0xff), (uint8_t)((byte_rate >> 24) & 0xff),
+        (uint8_t)(BITS_PER_SAMPLE/8 & 0xff), (uint8_t)(BITS_PER_SAMPLE/8 >> 8 & 0xff), // (BITS_PER_SAMPLE * channels) / 8
+        (uint8_t)(BITS_PER_SAMPLE & 0xff), (uint8_t)(BITS_PER_SAMPLE >> 8 & 0xff), // BITS_PER_SAMPLE
+        0x64, 0x61, 0x74, 0x61, // data
+        (uint8_t)(dataSize & 0xff), (uint8_t)((dataSize >> 8) & 0xff), (uint8_t)((dataSize >> 16) & 0xff), (uint8_t)((dataSize >> 24) & 0xff),
+    };
 
 
-    // // print both the WAV header and the audio buffer in HEX format to serial
-    // // you can use the script in `hex-to-buffer.js` to make a proper WAV file again
-    // printf("WAV file:\n");
-    // for (size_t ix = 0; ix < 44; ix++) {
-    //     printf("%02x ", wav_header[ix]);
-    // }
+    // print both the WAV header and the audio buffer in HEX format to serial
+    // you can use the script in `hex-to-buffer.js` to make a proper WAV file again
+    printf("WAV file:\n");
+    for (size_t ix = 0; ix < 44; ix++) {
+        printf("%02x ", wav_header[ix]);
+    }
 
-    // if (compressionOn) {
-    //     for (size_t ix = 0; ix < TARGET_AUDIO_BUFFER_NB_SAMPLES; ix++) {
-    //         printf("%02x ", compressedBuf[ix]);
-    //     }
-    // }
-    // else {
-    //     uint8_t *buf = (uint8_t*)TARGET_AUDIO_BUFFER;
-    //     for (size_t ix = 0; ix < TARGET_AUDIO_BUFFER_NB_SAMPLES * 2; ix++) {
-    //         printf("%02x ", buf[ix]);
-    //     }
-    // }
+    if (compressionOn) {
+        for (size_t ix = 0; ix < TARGET_AUDIO_BUFFER_NB_SAMPLES; ix++) {
+            printf("%02x ", compressedBuf[ix]);
+        }
+    }
+    else {
+        uint8_t *buf = (uint8_t*)TARGET_AUDIO_BUFFER;
+        for (size_t ix = 0; ix < TARGET_AUDIO_BUFFER_NB_SAMPLES * 2; ix++) {
+            printf("%02x ", buf[ix]);
+        }
+    }
     
 
     // TODO: Send data in TARGET_AUDIO_BUFFER to bluetooth
