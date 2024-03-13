@@ -1,18 +1,32 @@
 #include "recordAudio.hpp"
-
 Timer t;
 bool compressionOn = true;
+
+
+void play_audio(uint8_t* buf_data, uint32_t buf_size){
+    printf("PLAYING AUDIO\n");
+    
+    while (!audio->write(buf_data, buf_size)){
+        printf("WAITING\n");
+        audio->write_wait_ready();
+    }
+
+    if (audio->write_underflows(true) != 0){
+        printf("Playing audio caused an underflow\n");
+    }
+}
+
 
 // callback that gets invoked when TARGET_AUDIO_BUFFER is full
 void target_audio_buffer_full() {
     // pause audio stream
-    int32_t ret = BSP_AUDIO_IN_Pause(AUDIO_INSTANCE);
-    if (ret != BSP_ERROR_NONE) {
-        printf("Error Audio Pause (%d)\n", ret);
-    }
-    else {
-        printf("OK Audio Pause\n");
-    }
+    // int32_t ret = BSP_AUDIO_IN_Pause(AUDIO_INSTANCE);
+    // if (ret != BSP_ERROR_NONE) {
+    //     printf("Error Audio Pause (%d)\n", ret);
+    // }
+    // else {
+    //     printf("OK Audio Pause\n");
+    // }
 
     t.stop();
     printf("Recording time: %llu ms\n", t.elapsed_time().count());
@@ -22,14 +36,14 @@ void target_audio_buffer_full() {
 
     t.start();
 
-    if (compressionOn) {
-        for (size_t ix = 0; ix < TARGET_AUDIO_BUFFER_NB_SAMPLES; ix++) {
-            //printf("Decompressed: %hu", TARGET_AUDIO_BUFFER[ix]);
-            compressedBuf[ix] = DIO_LinearToALaw(TARGET_AUDIO_BUFFER[ix]);
-            // TARGET_AUDIO_BUFFER[ix] = DIO_LinearToALaw(TARGET_AUDIO_BUFFER[ix]);
-            // printf("Compressed: %hu ", compressed_buf[ix]);
-        }
-    }
+    // if (compressionOn) {
+    //     for (size_t ix = 0; ix < TARGET_AUDIO_BUFFER_NB_SAMPLES; ix++) {
+    //         //printf("Decompressed: %hu", TARGET_AUDIO_BUFFER[ix]);
+    //         compressedBuf[ix] = DIO_LinearToALaw(TARGET_AUDIO_BUFFER[ix]);
+    //         // TARGET_AUDIO_BUFFER[ix] = DIO_LinearToALaw(TARGET_AUDIO_BUFFER[ix]);
+    //         // printf("Compressed: %hu ", compressed_buf[ix]);
+    //     }
+    // }
 
     t.stop();
     printf("Compression time: %llu ms\n", t.elapsed_time().count());
@@ -70,31 +84,31 @@ void target_audio_buffer_full() {
 
     // print both the WAV header and the audio buffer in HEX format to serial
     // you can use the script in `hex-to-buffer.js` to make a proper WAV file again
-    printf("WAV file:\n");
-    for (size_t ix = 0; ix < 44; ix++) {
-        printf("%02x ", wav_header[ix]);
-    }
+    // printf("WAV file:\n");
+    // for (size_t ix = 0; ix < 44; ix++) {
+    //     printf("%02x ", wav_header[ix]);
+    // }
 
-    if (compressionOn) {
-        for (size_t ix = 0; ix < TARGET_AUDIO_BUFFER_NB_SAMPLES; ix++) {
-            printf("%02x ", compressedBuf[ix]);
-        }
-    }
-    else {
-        uint8_t *buf = (uint8_t*)TARGET_AUDIO_BUFFER;
-        for (size_t ix = 0; ix < TARGET_AUDIO_BUFFER_NB_SAMPLES * 2; ix++) {
-            printf("%02x ", buf[ix]);
-        }
-    }
+    // if (compressionOn) {
+    //     for (size_t ix = 0; ix < TARGET_AUDIO_BUFFER_NB_SAMPLES; ix++) {
+    //         printf("%02x ", compressedBuf[ix]);
+    //     }
+    // }
+    // else {
+    //     uint8_t *buf = (uint8_t*)TARGET_AUDIO_BUFFER;
+    //     for (size_t ix = 0; ix < TARGET_AUDIO_BUFFER_NB_SAMPLES * 2; ix++) {
+    //         printf("%02x ", buf[ix]);
+    //     }
+    // }
     
 
     // TODO: Send data in TARGET_AUDIO_BUFFER to bluetooth
     
-    
+    mainQueue.call(play_audio, (uint8_t*)TARGET_AUDIO_BUFFER, TARGET_AUDIO_BUFFER_NB_SAMPLES * 2);
 
-    
     TARGET_AUDIO_BUFFER_IX = 0; // reset audio buffer idx to begin recording agiai
     printf("\n");
+    t.start();
 }
 
 /**
@@ -156,7 +170,6 @@ void print_audio(){
 }
 
 void record_audio(){
-
 
     int32_t ret;
     uint32_t state;

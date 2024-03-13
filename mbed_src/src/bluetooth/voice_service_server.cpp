@@ -4,62 +4,55 @@
 #include "ble/Gap.h"
 #include <cstdint>
 #include <stdint.h>
+#include "USBAudio.h"
 
-GattAttribute nameDescrStart( BLE_UUID_DESCRIPTOR_CHAR_USER_DESC, (uint8_t *)"Audio Start", strlen("Audio Start"));
-GattAttribute *descriptorsStart[] = {&nameDescrStart};
-
-GattAttribute nameDescrRecieveAudio( BLE_UUID_DESCRIPTOR_CHAR_USER_DESC, (uint8_t *)"Recieved Audio", strlen("Recieved Audio"));
-GattAttribute *descriptorsRecievedAudio[] = {&nameDescrRecieveAudio};
-
-GattAttribute nameDescrSentAudio( BLE_UUID_DESCRIPTOR_CHAR_USER_DESC, (uint8_t *)"Sent Audio", strlen("Sent Audio"));
-GattAttribute *descriptorsSentAudio[] = {&nameDescrSentAudio};
 
 VoiceService::VoiceService()
 {
-    VOICESERVICE_START = new ReadOnlyGattCharacteristic<uint8_t> (VoiceService::VOICESERVICE_START_UUID, 0, GattCharacteristic::BLE_GATT_CHAR_PROPERTIES_NOTIFY );
-    VOICESERVICE_RECIEVE_AUDIO = new ReadOnlyGattCharacteristic<uint8_t> (VoiceService::VOICESERVICE_RECIEVE_AUDIO_UUID, 0, GattCharacteristic::BLE_GATT_CHAR_PROPERTIES_NOTIFY );
-    VOICESERVICE_SEND_AUDIO = new ReadOnlyGattCharacteristic<uint8_t> (VoiceService::VOICESERVICE_SEND_AUDIO_UUID, 0, GattCharacteristic::BLE_GATT_CHAR_PROPERTIES_NOTIFY );
 
+    BLE &ble = BLE::Instance();
 
-    // Add this new service. This should only happen once.
-    // BLE &ble = BLE::Instance();
-    // GattCharacteristic *characteristics[] = {
-    //     &VOICESERVICE_START,
-    //     &VOICESERVICE_RECIEVE_AUDIO,
-    //     &VOICESERVICE_SEND_AUDIO
-    // };
+    // GattAttribute* nameDescrStart = new GattAttribute( BLE_UUID_DESCRIPTOR_CHAR_USER_DESC , (uint8_t *)start_name.c_str(), start_name.size());
+    // GattAttribute *descriptorsStart[] = {nameDescrStart};
 
-    // GattService voice_service(
-    //     VoiceService::VOICESERVICE_UUID,
-    //     characteristics,
-    //     sizeof(characteristics) / sizeof(characteristics[0])
-    // );
-    // ble.gattServer().addService(voice_service);
+    // GattAttribute* nameDescrRecieveAudio = new GattAttribute( BLE_UUID_DESCRIPTOR_CHAR_USER_DESC , (uint8_t *)received_name.c_str(), received_name.size());
+    // GattAttribute *descriptorsRecievedAudio[] = {nameDescrRecieveAudio};
 
-    // Set an event handler that is called after a connected peer has written an attribute.
-    // server.onDataWritten(VoiceService::onDataWritten);
+    // GattAttribute* nameDescrSentAudio = new GattAttribute( BLE_UUID_DESCRIPTOR_CHAR_USER_DESC , (uint8_t *)sent_name.c_str(), sent_name.size());
+    // GattAttribute *descriptorsSentAudio[] = {nameDescrSentAudio};
+
+    // VOICESERVICE_START = new ReadOnlyGattCharacteristic<uint8_t> (VOICESERVICE_START_UUID, 0, GattCharacteristic::BLE_GATT_CHAR_PROPERTIES_NOTIFY, descriptorsStart,  sizeof(descriptorsStart)/sizeof(GattAttribute*));
+    // VOICESERVICE_RECIEVE_AUDIO = new WriteOnlyArrayGattCharacteristic<uint8_t, AUDIO_TRANSFER_SIZE> (VOICESERVICE_RECIEVE_AUDIO_UUID, 0, GattCharacteristic::BLE_GATT_CHAR_PROPERTIES_NOTIFY, descriptorsRecievedAudio, sizeof(descriptorsRecievedAudio)/sizeof(GattAttribute*));
+    // VOICESERVICE_SEND_AUDIO = new ReadOnlyArrayGattCharacteristic<uint8_t, AUDIO_TRANSFER_SIZE> (VOICESERVICE_SEND_AUDIO_UUID, 0, GattCharacteristic::BLE_GATT_CHAR_PROPERTIES_NOTIFY, descriptorsSentAudio, sizeof(descriptorsSentAudio)/sizeof(GattAttribute*));
+    
+    VOICESERVICE_START = new ReadOnlyGattCharacteristic<uint8_t> (VOICESERVICE_START_UUID, 0, GattCharacteristic::BLE_GATT_CHAR_PROPERTIES_NOTIFY);
+    VOICESERVICE_RECEIVE_AUDIO = new WriteOnlyArrayGattCharacteristic<uint8_t, AUDIO_TRANSFER_SIZE> (VOICESERVICE_RECIEVE_AUDIO_UUID, 0, GattCharacteristic::BLE_GATT_CHAR_PROPERTIES_NOTIFY);
+    VOICESERVICE_SEND_AUDIO = new ReadOnlyArrayGattCharacteristic<uint8_t, AUDIO_TRANSFER_SIZE> (VOICESERVICE_SEND_AUDIO_UUID, 0, GattCharacteristic::BLE_GATT_CHAR_PROPERTIES_NOTIFY);
+    VOICESERVICE_RECEIVE_FREQ = new WriteOnlyGattCharacteristic<uint32_t> (VOICESERVICE_RECEIVE_FREQ_UUID, 0, GattCharacteristic::BLE_GATT_CHAR_PROPERTIES_NOTIFY);
+    VOICESERVICE_SEND_FREQ = new ReadOnlyGattCharacteristic<uint32_t> (VOICESERVICE_SEND_FREQ_UUID, 0, GattCharacteristic::BLE_GATT_CHAR_PROPERTIES_NOTIFY);
+
 }
 
-void VoiceService::start(BLE &ble, events::EventQueue &event_queue)
-    {
-        const UUID uuid = VOICESERVICE_UUID;
-        GattCharacteristic* charTable[] = { VOICESERVICE_START, VOICESERVICE_RECIEVE_AUDIO, VOICESERVICE_SEND_AUDIO };
-        GattService voice_service_service(uuid, charTable, 1);
+void VoiceService::start()
+{
 
-        ble.gattServer().addService(voice_service_service);
+    BLE &ble = BLE::Instance();
 
-        ble.gattServer().setEventHandler(this);
+    const UUID uuid = VOICESERVICE_UUID;
+    GattCharacteristic* charTable[] = { VOICESERVICE_START, VOICESERVICE_RECEIVE_AUDIO, VOICESERVICE_SEND_AUDIO, VOICESERVICE_RECEIVE_FREQ, VOICESERVICE_SEND_FREQ};
+    GattService voice_service_service(uuid, charTable, sizeof(charTable) / sizeof(charTable[0]));
 
-        printf("Voice service added with UUID 0xB000\r\n");
-        printf("Connect and write to characteristic 0xB002\r\n");
+    ble.gattServer().addService(voice_service_service);
 
-        // This is test code. remove this when audio setup is done
-        uint16_t start = 12;
-        uint16_t audio = 30;
-        ble::GattServer& server = ble.gattServer();
-        server.write(VOICESERVICE_START->getValueHandle(), (uint8_t*)&start, sizeof(start));
-        server.write(VOICESERVICE_RECIEVE_AUDIO->getValueHandle(), (uint8_t*)&audio, sizeof(audio));
-    };
+    ble.gattServer().setEventHandler(this);
+
+    // This is test code. remove this when audio setup is done
+    // uint16_t start = 12;
+    // uint16_t audio = 30;
+    // ble::GattServer& server = ble.gattServer();
+    // server.write(VOICESERVICE_START->getValueHandle(), (uint8_t*)&start, sizeof(start));
+    // server.write(VOICESERVICE_RECEIVE_AUDIO->getValueHandle(), (uint8_t*)&audio, sizeof(audio));
+};
 
 void VoiceService::sendAudio() {
     // send data from the compacted channel
@@ -74,22 +67,39 @@ void VoiceService::sendAudio() {
 }
 
 void VoiceService::onDataRead(const GattReadCallbackParams &params) {
-    printf("Data read\n");
+    printf("SERVICE: Data read from client!\n");
     //VoiceService::sendAudio();
 }
 
 void VoiceService::onDataSent(const GattDataSentCallbackParams &params) {
-    printf("Data sent\n");
+    printf("Data sent from service!\n");
     //VoiceService::sendAudio();
 }
 
 // need to see if this will also get triggered when audio is written to the other device.
 void VoiceService::onDataWritten(const GattWriteCallbackParams &params) {
-    printf("Data written\n");
-    // set to get n
-    // uint8_t dataIn;
-    // BLE &ble = BLE::Instance();
-    // ble.gattServer().read(VOICESERVICE_RECIEVE_AUDIO.getValueHandle(), (uint8_t *)&dataIn, sizeof(dataIn));
-    // dataIn = *(params.data);
-    
+    printf("SERVICE: Data written from client.\n");
+
+    if (params.handle == VOICESERVICE_RECEIVE_AUDIO->getValueHandle() && params.len == 1){
+        BLE &ble = BLE::Instance();
+
+        uint32_t incoming_freq;
+        uint32_t incoming_freq_size = sizeof(incoming_freq);
+        ble.gattServer().read(VOICESERVICE_RECEIVE_FREQ->getValueHandle(), (uint8_t *)&incoming_freq, (uint16_t *)&incoming_freq_size);
+
+
+        printf("SERVICE: Acquired new audio data! %u\n", *params.data);
+
+        if (!audio->write((uint8_t *)params.data, AUDIO_TRANSFER_SIZE)) {
+            printf("Waiting...\n");
+            audio->write_wait_ready();
+        }
+
+        if (audio->write_underflows(true) != 0){
+            printf("SERVICE: playing audio caused an underflow\n");
+        }
+
+        printf("SERVICE: done playing audio\n");
+
+    }
 }

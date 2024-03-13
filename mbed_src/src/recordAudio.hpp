@@ -4,7 +4,7 @@
 #include "stm32l475e_iot01_audio.h"
 #include "companders.h"
 #include <cstdint>
-#include "mainQueue.hpp"
+#include "globals.hpp"
 
 // # of seconds of audio to record before sending through Bluetooth
 // Can change these values to find optimal sound packet size

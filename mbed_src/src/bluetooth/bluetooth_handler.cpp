@@ -1,7 +1,7 @@
 #include "gap_handler.hpp"
 #include "pretty_print.hpp"
 #include "bluetooth_handler.hpp"
-#include "mainQueue.hpp"
+#include "globals.hpp"
 #include "voice_service_server.hpp"
 
 static const ble::AdvertisingParameters advertising_params(
@@ -96,7 +96,7 @@ void init_bluetooth()
     // The BLE class is a singleton
     BLE &ble = BLE::Instance();
 
-    voiceService.start(ble, mainQueue);
+    voiceService.start();
 
     ble.onEventsToProcess(schedule_ble_events);
 

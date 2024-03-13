@@ -3,16 +3,14 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-// #include "mbed.h"
-// #include "stm32l475e_iot01_audio.h"
-// #include "companders.h"
-// #include <cstdint>
-// #include "mainQueue.hpp"
+#include "globals.hpp"
 #include "recordAudio.hpp"
 #include "bluetooth_handler.hpp"
-#include "mainQueue.hpp"
+#include "globals.hpp"
 
 EventQueue mainQueue;
+USBAudio* audio = new USBAudio(true, wavFreq, 1, wavFreq);
+
 int main()
 {
     printf("Hello from microphone demo\n");
@@ -33,6 +31,9 @@ int main()
         printf("OK Audio Init\t(Audio Freq=%ld)\r\n", wavFreq);
     }
 
+
+    
+
     // record_audio();
     // mainQueue.call_every(2000ms, print_audio);
     // this is just here for testing, don't uncomment otherwise
@@ -41,3 +42,4 @@ int main()
     
     init_bluetooth();
  }
+
