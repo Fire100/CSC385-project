@@ -5,8 +5,8 @@
 #include "recordAudio.hpp"
 
 
-#ifndef VOICE_SERVICE
-#define VOICE_SERVICE
+#ifndef VOICE_SERVICE_CLIENT
+#define VOICE_SERVICE_CLIENT
 
 class VoiceServiceClient{
 
@@ -55,6 +55,10 @@ static bool voiceservice_recieve_audio_found = false;
 static DiscoveredCharacteristic VOICESERVICE_SEND_AUDIO;
 static bool voiceservice_send_audio_found = false;
 
+void on_read(const GattReadCallbackParams *response);
+void on_write(const GattWriteCallbackParams *response);
+void service_discovery(const DiscoveredService *service);
+void characteristic_discovery(const DiscoveredCharacteristic *characteristic) ;
 
 
 #endif // VOICE_SERVICE

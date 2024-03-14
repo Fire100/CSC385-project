@@ -80,8 +80,8 @@ void discovery_termination(ble::connection_handle_t connectionHandle) {
 }
 
 void VoiceServiceClient::start_discovery(BLE &ble, events::EventQueue &event_queue, const ble::ConnectionCompleteEvent &event) {
-    printf("We are looking for a service with UUID 0xA000\r\n");
-    printf("And a characteristic with UUID 0xA001\r\n");
+    printf("We are looking for a service with UUID 0xB000\r\n");
+    printf("And a characteristic with UUID 0xB001\r\n");
 
     ble.gattClient().onServiceDiscoveryTermination(discovery_termination);
     ble.gattClient().launchServiceDiscovery(

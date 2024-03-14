@@ -6,6 +6,7 @@
 #include "globals.hpp"
 #include "recordAudio.hpp"
 #include "bluetooth_handler.hpp"
+#include "bluetooth_handler_client.hpp"
 #include "globals.hpp"
 
 EventQueue mainQueue;
@@ -41,5 +42,6 @@ int main()
 
     
     init_bluetooth();
+    // init_bluetooth_client();
  }
 
