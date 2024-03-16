@@ -8,8 +8,8 @@
 
 // # of seconds of audio to record before sending through Bluetooth
 // Can change these values to find optimal sound packet size
-const float num_seconds = 1;
-static size_t wavFreq = AUDIO_SAMPLING_FREQUENCY;
+static const float num_seconds = 1;
+static const size_t wavFreq = AUDIO_SAMPLING_FREQUENCY;
 // NOTE: too high of above values causes there to be not enough memory
 
 
@@ -27,7 +27,7 @@ const uint32_t nb_samples = PCM_Buffer_arr_len / 2;
 
 
 // To generate num_seconds worth of audio, calculate how big an array we need
-static size_t TARGET_AUDIO_BUFFER_NB_SAMPLES = wavFreq * num_seconds;
+static const size_t TARGET_AUDIO_BUFFER_NB_SAMPLES = wavFreq * num_seconds;
 static int16_t *TARGET_AUDIO_BUFFER = (int16_t*)calloc(TARGET_AUDIO_BUFFER_NB_SAMPLES, sizeof(int16_t));
 static size_t TARGET_AUDIO_BUFFER_IX = 0;
 
@@ -39,7 +39,7 @@ static BSP_AUDIO_Init_t MicParams;
 
 
 
-static uint8_t compressedBuf[16000];
+static uint8_t compressedBuf[TARGET_AUDIO_BUFFER_NB_SAMPLES];
 static bool dataUpdated = false;
 #define PRIu16 "hu"
 /*

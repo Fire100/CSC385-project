@@ -7,7 +7,7 @@
 #include "USBAudio.h"
 
 
-VoiceService::VoiceService()
+VoiceServiceServer::VoiceServiceServer()
 {
 
     BLE &ble = BLE::Instance();
@@ -28,18 +28,15 @@ VoiceService::VoiceService()
     VOICESERVICE_START = new ReadOnlyGattCharacteristic<uint8_t> (VOICESERVICE_START_UUID, 0, GattCharacteristic::BLE_GATT_CHAR_PROPERTIES_NOTIFY);
     VOICESERVICE_RECEIVE_AUDIO = new WriteOnlyArrayGattCharacteristic<uint8_t, AUDIO_TRANSFER_SIZE> (VOICESERVICE_RECIEVE_AUDIO_UUID, 0, GattCharacteristic::BLE_GATT_CHAR_PROPERTIES_NOTIFY);
     VOICESERVICE_SEND_AUDIO = new ReadOnlyArrayGattCharacteristic<uint8_t, AUDIO_TRANSFER_SIZE> (VOICESERVICE_SEND_AUDIO_UUID, 0, GattCharacteristic::BLE_GATT_CHAR_PROPERTIES_NOTIFY);
-    VOICESERVICE_RECEIVE_FREQ = new WriteOnlyGattCharacteristic<uint32_t> (VOICESERVICE_RECEIVE_FREQ_UUID, 0, GattCharacteristic::BLE_GATT_CHAR_PROPERTIES_NOTIFY);
-    VOICESERVICE_SEND_FREQ = new ReadOnlyGattCharacteristic<uint32_t> (VOICESERVICE_SEND_FREQ_UUID, 0, GattCharacteristic::BLE_GATT_CHAR_PROPERTIES_NOTIFY);
-
 }
 
-void VoiceService::start()
+void VoiceServiceServer::start()
 {
 
     BLE &ble = BLE::Instance();
 
     const UUID uuid = VOICESERVICE_UUID;
-    GattCharacteristic* charTable[] = { VOICESERVICE_START, VOICESERVICE_RECEIVE_AUDIO, VOICESERVICE_SEND_AUDIO, VOICESERVICE_RECEIVE_FREQ, VOICESERVICE_SEND_FREQ};
+    GattCharacteristic* charTable[] = { VOICESERVICE_START, VOICESERVICE_RECEIVE_AUDIO, VOICESERVICE_SEND_AUDIO};
     GattService voice_service_service(uuid, charTable, sizeof(charTable) / sizeof(charTable[0]));
 
     ble.gattServer().addService(voice_service_service);
@@ -54,7 +51,7 @@ void VoiceService::start()
     // server.write(VOICESERVICE_RECEIVE_AUDIO->getValueHandle(), (uint8_t*)&audio, sizeof(audio));
 };
 
-void VoiceService::sendAudio() {
+void VoiceServiceServer::sendAudio(uint8_t* audio_data, uint32_t size) {
     // send data from the compacted channel
     // this will be from compressedBuf but just sending dummy data for now
     uint8_t bytesSent = 5;
@@ -66,27 +63,12 @@ void VoiceService::sendAudio() {
     currentDataSent = (currentDataSent + 1) % bytesSent;
 }
 
-void VoiceService::onDataRead(const GattReadCallbackParams &params) {
-    printf("SERVICE: Data read from client!\n");
-    //VoiceService::sendAudio();
-}
-
-void VoiceService::onDataSent(const GattDataSentCallbackParams &params) {
-    printf("Data sent from service!\n");
-    //VoiceService::sendAudio();
-}
-
 // need to see if this will also get triggered when audio is written to the other device.
-void VoiceService::onDataWritten(const GattWriteCallbackParams &params) {
+void VoiceServiceServer::onDataWritten(const GattWriteCallbackParams &params) {
     printf("SERVICE: Data written from client.\n");
 
     if (params.handle == VOICESERVICE_RECEIVE_AUDIO->getValueHandle() && params.len == 1){
         BLE &ble = BLE::Instance();
-
-        uint32_t incoming_freq;
-        uint32_t incoming_freq_size = sizeof(incoming_freq);
-        ble.gattServer().read(VOICESERVICE_RECEIVE_FREQ->getValueHandle(), (uint8_t *)&incoming_freq, (uint16_t *)&incoming_freq_size);
-
 
         printf("SERVICE: Acquired new audio data! %u\n", *params.data);
 
