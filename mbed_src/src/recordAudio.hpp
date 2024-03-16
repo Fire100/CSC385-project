@@ -8,8 +8,8 @@
 
 // # of seconds of audio to record before sending through Bluetooth
 // Can change these values to find optimal sound packet size
-static const float num_seconds = 1;
-static const size_t wavFreq = AUDIO_SAMPLING_FREQUENCY;
+static const size_t wavFreq = AUDIO_SAMPLING_FREQUENCY*2;
+static const float num_seconds = 0.1;
 // NOTE: too high of above values causes there to be not enough memory
 
 

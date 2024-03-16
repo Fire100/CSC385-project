@@ -68,20 +68,9 @@ void VoiceServiceServer::onDataWritten(const GattWriteCallbackParams &params) {
     printf("SERVICE: Data written from client.\n");
 
     if (params.handle == VOICESERVICE_RECEIVE_AUDIO->getValueHandle() && params.len == 1){
-        BLE &ble = BLE::Instance();
-
         printf("SERVICE: Acquired new audio data! %u\n", *params.data);
 
-        if (!audio->write((uint8_t *)params.data, AUDIO_TRANSFER_SIZE)) {
-            printf("Waiting...\n");
-            audio->write_wait_ready();
-        }
-
-        if (audio->write_underflows(true) != 0){
-            printf("SERVICE: playing audio caused an underflow\n");
-        }
-
-        printf("SERVICE: done playing audio\n");
+        this->playAudio((uint8_t *)params.data, AUDIO_TRANSFER_SIZE);
 
     }
 }

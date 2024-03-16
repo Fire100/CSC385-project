@@ -34,7 +34,7 @@ int main()
         printf("Error Audio Init (%ld)\r\n", ret);
         return 1;
     } else {
-        printf("OK Audio Init\t(Audio Freq=%ld)\r\n", wavFreq);
+        printf("OK Audio Init\t(Audio Freq=%ld) (num_seconds=%f)\r\n", wavFreq, num_seconds);
     }
 
     if (CLIENT){

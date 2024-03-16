@@ -1,21 +1,12 @@
 #include "recordAudio.hpp"
 #include "voice_service.hpp"
 Timer t;
-bool compressionOn = false;
+bool compressionOn = true;
 
 // callback that gets invoked when TARGET_AUDIO_BUFFER is full
 void target_audio_buffer_full() {
-    // pause audio stream
-    // int32_t ret = BSP_AUDIO_IN_Pause(AUDIO_INSTANCE);
-    // if (ret != BSP_ERROR_NONE) {
-    //     printf("Error Audio Pause (%d)\n", ret);
-    // }
-    // else {
-    //     printf("OK Audio Pause\n");
-    // }
-
     t.stop();
-    printf("Recording time: %llu ms\n", t.elapsed_time().count());
+    // printf("Recording time: %llu ms\n", t.elapsed_time().count());
     t.reset();
 
     // compression
@@ -24,29 +15,14 @@ void target_audio_buffer_full() {
 
     if (compressionOn) {
         for (size_t ix = 0; ix < TARGET_AUDIO_BUFFER_NB_SAMPLES; ix++) {
-            //printf("Decompressed: %hu", TARGET_AUDIO_BUFFER[ix]);
             compressedBuf[ix] = DIO_LinearToALaw(TARGET_AUDIO_BUFFER[ix]);
-            // TARGET_AUDIO_BUFFER[ix] = DIO_LinearToALaw(TARGET_AUDIO_BUFFER[ix]);
-            // printf("Compressed: %hu ", compressedBuf[ix]);
         }
-        printf("Compressed: %hu\n", compressedBuf[12]);
+        // printf("Compressed: %hu\n", compressedBuf[12]);
 
     }
 
     t.stop();
-    printf("Compression time: %llu ms\n", t.elapsed_time().count());
-
-    // Decompression code
-    // compressed audio is incomprehensible
-    // if (compressionOn) {
-    //     for (size_t ix = 0; ix < TARGET_AUDIO_BUFFER_NB_SAMPLES; ix++) {
-    //         // printf("Compressed: %hu", TARGET_AUDIO_BUFFER[ix]);
-    //         TARGET_AUDIO_BUFFER[ix] = DIO_ALawToLinear(compressedBuf[ix]);
-    //         // printf("Decompressed: %hu", TARGET_AUDIO_BUFFER[ix]);
-    //     }
-    //     printf("Decompressed: %hu\n", TARGET_AUDIO_BUFFER[12]);
-
-    // }
+    // printf("Compression time: %llu ms\n", t.elapsed_time().count());
 
     //might need to to multithreaded locking for updating this node.
     dataUpdated = true;
@@ -98,12 +74,11 @@ void target_audio_buffer_full() {
         voiceService->playAudio((uint8_t*)compressedBuf, TARGET_AUDIO_BUFFER_NB_SAMPLES, true);
     } else {
         voiceService->playAudio((uint8_t*)TARGET_AUDIO_BUFFER, TARGET_AUDIO_BUFFER_NB_SAMPLES * 2, false);
-
     }
     
 
     TARGET_AUDIO_BUFFER_IX = 0; // reset audio buffer idx to begin recording agiai
-    printf("\n");
+    // printf("\n");
     t.start();
 }
 

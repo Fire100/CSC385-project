@@ -18,19 +18,16 @@ class VoiceService {
         bool play_audio_decompress;
 
         void playAudioHelper(){
-            printf("PLAYING AUDIO\n");
-
             if (play_audio_decompress){
                 decompressAudio(play_audio_data, play_audio_size);
             }
 
             while (!audio->write(play_audio_data, play_audio_size)){
-                printf("WAITING\n");
                 audio->write_wait_ready();
             }
 
             if (audio->write_underflows(true) != 0){
-                printf("Playing audio caused an underflow\n");
+                // printf("Playing audio caused an underflow\n");
             }
 
             if (play_audio_decompress){
