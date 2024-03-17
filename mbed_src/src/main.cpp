@@ -41,7 +41,7 @@ int main()
     // mainQueue.dispatch_forever();
 
     
-    init_bluetooth();
-    // init_bluetooth_client();
+    // init_bluetooth();
+    init_bluetooth_client();
  }
 
