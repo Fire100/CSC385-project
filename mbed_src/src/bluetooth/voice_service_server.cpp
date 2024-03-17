@@ -62,7 +62,6 @@ void VoiceServiceServer::sendAudio(uint8_t* audio_data, uint32_t size) {
     }
 }
 
-// need to see if this will also get triggered when audio is written to the other device.
 void VoiceServiceServer::onDataWritten(const GattWriteCallbackParams &params) {
     printf("SERVICE: Data written from client.\n");
 

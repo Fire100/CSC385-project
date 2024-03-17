@@ -98,9 +98,6 @@ void VoiceServiceClient::start_discovery(BLE &ble, events::EventQueue &event_que
 }
 
 void VoiceServiceClient::sendAudio(uint8_t* audio_data, uint32_t size) {
-    // send data from the compacted channel
-    // this will be from compressedBuf but just sending dummy data for now
-
     if (voiceservice_send_audio_found) {
         // printf("Data sent \n");
         BLE &ble = BLE::Instance();
