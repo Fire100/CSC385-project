@@ -1,62 +1,28 @@
 #include "recordAudio.hpp"
+#include "voice_service.hpp"
 Timer t;
 bool compressionOn = true;
 
-
-void play_audio(uint8_t* buf_data, uint32_t buf_size){
-    printf("PLAYING AUDIO\n");
-    
-    while (!audio->write(buf_data, buf_size)){
-        printf("WAITING\n");
-        audio->write_wait_ready();
-    }
-
-    if (audio->write_underflows(true) != 0){
-        printf("Playing audio caused an underflow\n");
-    }
-}
-
-
 // callback that gets invoked when TARGET_AUDIO_BUFFER is full
 void target_audio_buffer_full() {
-    // pause audio stream
-    // int32_t ret = BSP_AUDIO_IN_Pause(AUDIO_INSTANCE);
-    // if (ret != BSP_ERROR_NONE) {
-    //     printf("Error Audio Pause (%d)\n", ret);
-    // }
-    // else {
-    //     printf("OK Audio Pause\n");
-    // }
-
     t.stop();
-    printf("Recording time: %llu ms\n", t.elapsed_time().count());
+    // printf("Recording time: %llu ms\n", t.elapsed_time().count());
     t.reset();
 
     // compression
 
     t.start();
 
-    // if (compressionOn) {
-    //     for (size_t ix = 0; ix < TARGET_AUDIO_BUFFER_NB_SAMPLES; ix++) {
-    //         //printf("Decompressed: %hu", TARGET_AUDIO_BUFFER[ix]);
-    //         compressedBuf[ix] = DIO_LinearToALaw(TARGET_AUDIO_BUFFER[ix]);
-    //         // TARGET_AUDIO_BUFFER[ix] = DIO_LinearToALaw(TARGET_AUDIO_BUFFER[ix]);
-    //         // printf("Compressed: %hu ", compressed_buf[ix]);
-    //     }
-    // }
+    if (compressionOn) {
+        for (size_t ix = 0; ix < TARGET_AUDIO_BUFFER_NB_SAMPLES; ix++) {
+            compressedBuf[ix] = DIO_LinearToALaw(TARGET_AUDIO_BUFFER[ix]);
+        }
+        // printf("Compressed: %hu\n", compressedBuf[12]);
+
+    }
 
     t.stop();
-    printf("Compression time: %llu ms\n", t.elapsed_time().count());
-
-    // Decompression code
-    // compressed audio is incomprehensible
-    // if (compressionOn) {
-    //     for (size_t ix = 0; ix < TARGET_AUDIO_BUFFER_NB_SAMPLES; ix++) {
-    //         // printf("Compressed: %hu", TARGET_AUDIO_BUFFER[ix]);
-    //         TARGET_AUDIO_BUFFER[ix] = DIO_ALawToLinear(TARGET_AUDIO_BUFFER[ix]);
-    //         // printf("Decompressed: %hu", TARGET_AUDIO_BUFFER[ix]);
-    //     }
-    // }
+    // printf("Compression time: %llu ms\n", t.elapsed_time().count());
 
     //might need to to multithreaded locking for updating this node.
     dataUpdated = true;
@@ -104,10 +70,15 @@ void target_audio_buffer_full() {
 
     // TODO: Send data in TARGET_AUDIO_BUFFER to bluetooth
     
-    mainQueue.call(play_audio, (uint8_t*)TARGET_AUDIO_BUFFER, TARGET_AUDIO_BUFFER_NB_SAMPLES * 2);
+    if (compressionOn){
+        voiceService->playAudio((uint8_t*)compressedBuf, TARGET_AUDIO_BUFFER_NB_SAMPLES, true);
+    } else {
+        voiceService->playAudio((uint8_t*)TARGET_AUDIO_BUFFER, TARGET_AUDIO_BUFFER_NB_SAMPLES * 2, false);
+    }
+    
 
     TARGET_AUDIO_BUFFER_IX = 0; // reset audio buffer idx to begin recording agiai
-    printf("\n");
+    // printf("\n");
     t.start();
 }
 

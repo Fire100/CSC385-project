@@ -7,10 +7,15 @@
 #include "recordAudio.hpp"
 #include "bluetooth_handler.hpp"
 #include "bluetooth_handler_client.hpp"
+#include "voice_service_server.hpp"
 #include "globals.hpp"
+#include "voice_service_client.hpp"
+#include "voice_service.hpp"
+
 
 EventQueue mainQueue;
 USBAudio* audio = new USBAudio(true, wavFreq, 1, wavFreq);
+VoiceService* voiceService;
 
 int main()
 {
@@ -29,19 +34,18 @@ int main()
         printf("Error Audio Init (%ld)\r\n", ret);
         return 1;
     } else {
-        printf("OK Audio Init\t(Audio Freq=%ld)\r\n", wavFreq);
+        printf("OK Audio Init\t(Audio Freq=%ld) (num_seconds=%f)\r\n", wavFreq, num_seconds);
     }
 
-
-    
-
-    // record_audio();
-    // mainQueue.call_every(2000ms, print_audio);
-    // this is just here for testing, don't uncomment otherwise
-    // mainQueue.dispatch_forever();
-
-    
-    // init_bluetooth();
-    init_bluetooth_client();
+    if (CLIENT){
+        voiceService = new VoiceServiceClient();
+        record_audio();
+        init_bluetooth_client();
+    }
+    else{
+        voiceService = new VoiceServiceServer();
+        record_audio();
+        init_bluetooth();
+    }
  }
 

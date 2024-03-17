@@ -31,7 +31,7 @@ void advertise()
     data_builder.setFlags();
     
     data_builder.setName("Bluetooth Phone");
-    data_builder.setLocalService(VoiceService::VOICESERVICE_UUID);
+    data_builder.setLocalService(VoiceServiceServer::VOICESERVICE_UUID);
 
     //  Use a "legacy" advertising handle
     error = _gap.setAdvertisingPayload(ble::LEGACY_ADVERTISING_HANDLE, data_builder.getAdvertisingData());
@@ -91,12 +91,11 @@ void init_bluetooth()
 {
     printf("Initializing Bluetooth\n");
 
-    VoiceService voiceService{};
 
     // The BLE class is a singleton
     BLE &ble = BLE::Instance();
 
-    voiceService.start();
+    ((VoiceServiceServer*)voiceService)->start();
 
     ble.onEventsToProcess(schedule_ble_events);
 

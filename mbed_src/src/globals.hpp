@@ -6,6 +6,6 @@
 
 extern EventQueue mainQueue;
 extern USBAudio* audio;
-
+const bool CLIENT = true;
 
 #endif // MAINQUEUE

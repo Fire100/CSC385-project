@@ -3,12 +3,12 @@
 #include "ble/Gap.h"
 #include <cstdint>
 #include "recordAudio.hpp"
-
+#include "voice_service.hpp"
 
 #ifndef VOICE_SERVICE_CLIENT
 #define VOICE_SERVICE_CLIENT
 
-class VoiceServiceClient{
+class VoiceServiceClient : public VoiceService {
 
     public:
 
@@ -25,7 +25,7 @@ class VoiceServiceClient{
 
         void start_discovery(BLE &ble, events::EventQueue &event_queue, const ble::ConnectionCompleteEvent &event);
 
-        void sendAudio();
+        void sendAudio(uint8_t* audio_data, uint32_t size) override;
 
         // virtual void onDataRead(const GattReadCallbackParams &params) override;
 
