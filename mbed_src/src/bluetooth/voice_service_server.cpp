@@ -52,15 +52,14 @@ void VoiceServiceServer::start()
 };
 
 void VoiceServiceServer::sendAudio(uint8_t* audio_data, uint32_t size) {
-    // send data from the compacted channel
-    // this will be from compressedBuf but just sending dummy data for now
-    uint8_t bytesSent = 5;
-    uint8_t bytesToSend[5] = {0, 1, 2, 3, 4};
     BLE &ble = BLE::Instance();
-
-    ble.gattServer().write(VOICESERVICE_SEND_AUDIO->getValueHandle(), (uint8_t *)&bytesToSend[currentDataSent], sizeof(bytesToSend[currentDataSent]));
-
-    currentDataSent = (currentDataSent + 1) % bytesSent;
+    //printf("writing audio \n");
+    int audioTransferIterations = (int) size / AUDIO_TRANSFER_SIZE;
+    // printf("%d \n", audioTransferIterations);
+    for (int i = 0; i < audioTransferIterations; i++) {
+        //printf("%d \n", (int) audio_data[i]);
+        ble.gattServer().write(VOICESERVICE_SEND_AUDIO->getValueHandle(), (uint8_t *)&audio_data[i * AUDIO_TRANSFER_SIZE], sizeof(audio_data[0]) * AUDIO_TRANSFER_SIZE);
+    }
 }
 
 // need to see if this will also get triggered when audio is written to the other device.
