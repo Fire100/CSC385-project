@@ -11,15 +11,6 @@
 class VoiceServiceClient : public VoiceService {
 
     public:
-
-        // might want to add these constants to a seperate file later to ensure consistency between the server and client.
-        static const uint32_t VOICESERVICE_UUID = 0xB000;
-        static const uint32_t VOICESERVICE_START_UUID = 0xB001;
-        static const uint32_t VOICESERVICE_SEND_AUDIO_UUID = 0xB002;
-        static const uint32_t VOICESERVICE_RECEIVE_AUDIO_UUID = 0xB003;
-
-        static const uint32_t AUDIO_TRANSFER_SIZE = 1; // 1024
-
         VoiceServiceClient();
         ~VoiceServiceClient() {};
 
