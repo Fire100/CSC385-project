@@ -71,10 +71,10 @@ void target_audio_buffer_full() {
     // TODO: Send data in TARGET_AUDIO_BUFFER to bluetooth
     
     if (compressionOn){
-        voiceService->sendAudio((uint8_t*)compressedBuf, TARGET_AUDIO_BUFFER_NB_SAMPLES);
+        voiceService->sendAudioQueue((uint8_t*)compressedBuf, TARGET_AUDIO_BUFFER_NB_SAMPLES);
         //voiceService->playAudio((uint8_t*)compressedBuf, TARGET_AUDIO_BUFFER_NB_SAMPLES, true);
     } else {
-        voiceService->sendAudio((uint8_t*)TARGET_AUDIO_BUFFER, TARGET_AUDIO_BUFFER_NB_SAMPLES * 2);
+        voiceService->sendAudioQueue((uint8_t*)TARGET_AUDIO_BUFFER, TARGET_AUDIO_BUFFER_NB_SAMPLES * 2);
         //voiceService->playAudio((uint8_t*)TARGET_AUDIO_BUFFER, TARGET_AUDIO_BUFFER_NB_SAMPLES * 2, false);
     }
     

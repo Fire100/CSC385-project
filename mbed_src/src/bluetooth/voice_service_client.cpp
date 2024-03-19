@@ -105,7 +105,7 @@ void VoiceServiceClient::start_discovery(BLE &ble, events::EventQueue &event_que
     );
 }
 
-void VoiceServiceClient::sendAudio(uint8_t* audio_data, uint32_t size) {
+void VoiceServiceClient::sendAudio() {
     if (voiceservice_send_audio_found) {
         // printf("Data sent \n");
         // BLE &ble = BLE::Instance();
@@ -121,9 +121,9 @@ void VoiceServiceClient::sendAudio(uint8_t* audio_data, uint32_t size) {
         BLE &ble = BLE::Instance();
 
         // printf("%d \n", ble.gattClient().isCharacteristicDescriptorDiscoveryActive(VOICESERVICE_RECEIVE_AUDIO));
-        for (int i = 0; i < size; i++) {
+        for (int i = 0; i < send_audio_size; i++) {
             //printf("data sent");
-            VOICESERVICE_RECEIVE_AUDIO.write(sizeof(audio_data[i]), (uint8_t *)&audio_data[i]);
+            VOICESERVICE_RECEIVE_AUDIO.write(sizeof(send_audio_data[i]), (uint8_t *)&send_audio_data[i]);
         }
 
         

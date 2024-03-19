@@ -19,7 +19,7 @@ class VoiceServiceServer : ble::GattServer::EventHandler, public VoiceService {
 
         void start();
 
-        void sendAudio(uint8_t* audio_data, uint32_t size) override;
+        void sendAudio() override;
 
         virtual void onDataWritten(const GattWriteCallbackParams &params) override;
 

@@ -19,7 +19,7 @@ class VoiceServiceClient : public VoiceService {
 
         void start_discovery(BLE &ble, events::EventQueue &event_queue, const ble::ConnectionCompleteEvent &event);
 
-        void sendAudio(uint8_t* audio_data, uint32_t size) override;
+        void sendAudio() override;
         
 
         // virtual void onDataRead(const GattReadCallbackParams &params) override;
