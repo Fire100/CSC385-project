@@ -14,9 +14,6 @@
 class VoiceServiceServer : ble::GattServer::EventHandler, public VoiceService {
 
     public:
-
-        static const uint32_t AUDIO_TRANSFER_SIZE = 1000; // 1024
-
         VoiceServiceServer();
         ~VoiceServiceServer() {};
 

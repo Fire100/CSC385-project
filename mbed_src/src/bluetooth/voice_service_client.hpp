@@ -12,9 +12,6 @@ class VoiceServiceClient : public VoiceService {
 
     public:
 
-        // might want to add these constants to a seperate file later to ensure consistency between the server and client.
-        static const uint32_t AUDIO_TRANSFER_SIZE = 1; // 1024
-
         VoiceServiceClient();
         ~VoiceServiceClient() {};
 

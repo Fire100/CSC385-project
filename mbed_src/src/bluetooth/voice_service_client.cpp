@@ -114,7 +114,7 @@ void VoiceServiceClient::sendAudio(uint8_t* audio_data, uint32_t size) {
         // // printf("%d \n", audioTransferIterations);
         // for (int i = 0; i < audioTransferIterations; i++) {
         //     //printf("%d \n", (int) audio_data[i]);
-        //     VOICESERVICE_SEND_AUDIO.write(sizeof(audio_data[0]) * AUDIO_TRANSFER_SIZE, (uint8_t *)&audio_data[i * AUDIO_TRANSFER_SIZE]);
+        //     VOICESERVICE_RECEIVE_AUDIO.write(sizeof(audio_data[0]) * AUDIO_TRANSFER_SIZE, (uint8_t *)&audio_data[i * AUDIO_TRANSFER_SIZE]);
         // }
 
         // write one value at a time
