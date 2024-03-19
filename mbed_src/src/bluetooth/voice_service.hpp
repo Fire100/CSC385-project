@@ -45,6 +45,11 @@ class VoiceService {
         }
 
     public:
+        static const uint32_t VOICESERVICE_UUID = 0xB000;
+        static const uint32_t VOICESERVICE_START_UUID = 0xB001;
+        static const uint32_t VOICESERVICE_RECEIVE_AUDIO_UUID = 0xB002;
+        static const uint32_t VOICESERVICE_SEND_AUDIO_UUID = 0xB003;
+
         virtual void sendAudio(uint8_t* audio_data, uint32_t size) = 0;
         void playAudio(uint8_t* audio_data, uint32_t size, bool decompress = true) {
             play_audio_data = audio_data;

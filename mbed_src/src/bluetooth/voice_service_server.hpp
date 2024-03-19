@@ -15,12 +15,7 @@ class VoiceServiceServer : ble::GattServer::EventHandler, public VoiceService {
 
     public:
 
-        static const uint32_t VOICESERVICE_UUID = 0xB000;
-        static const uint32_t VOICESERVICE_START_UUID = 0xB001;
-        static const uint32_t VOICESERVICE_RECIEVE_AUDIO_UUID = 0xB002;
-        static const uint32_t VOICESERVICE_SEND_AUDIO_UUID = 0xB003;
-
-        static const uint32_t AUDIO_TRANSFER_SIZE = 1; // 1024
+        static const uint32_t AUDIO_TRANSFER_SIZE = 1000; // 1024
 
         VoiceServiceServer();
         ~VoiceServiceServer() {};

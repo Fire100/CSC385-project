@@ -35,11 +35,11 @@ VoiceServiceClient::VoiceServiceClient()
     // server.onDataWritten(VoiceService::onDataWritten);
 }
 
-void on_write(const GattWriteCallbackParams *response) {
+void on_read(const GattReadCallbackParams *response) {
     printf("Data received\n");
-    printf("SERVICE: Data written from client.\n");
+    printf("SERVICE: Data written from server.\n");
 
-    if (response->handle == VOICESERVICE_RECEIVE_AUDIO.getValueHandle() && response->len == 1){
+    if (response->handle == VOICESERVICE_SEND_AUDIO.getValueHandle() && response->len == 1){
         printf("SERVICE: Acquired new audio data! %u\n", *(response->data));
 
         voiceService->playAudio((uint8_t *)response->data, VoiceServiceClient::AUDIO_TRANSFER_SIZE);
@@ -54,32 +54,40 @@ void service_discovery(const DiscoveredService *service) {
             printf("We found the service we were looking for\r\n");
         }
     }
+    printf("looking for service\n");
 }
 
 void characteristic_discovery(const DiscoveredCharacteristic *characteristic) {
     if (characteristic->getUUID().getShortUUID() == VoiceServiceClient::VOICESERVICE_SEND_AUDIO_UUID) {
         printf("We found the send audio characteristic\r\n");
         VOICESERVICE_SEND_AUDIO = *characteristic;
+        
         voiceservice_send_audio_found = true;
     }
     if (characteristic->getUUID().getShortUUID() == VoiceServiceClient::VOICESERVICE_RECEIVE_AUDIO_UUID ) {
         printf("We found the receive audio characteristic\r\n");
         VOICESERVICE_RECEIVE_AUDIO = *characteristic;
+        printf("%u \n", VOICESERVICE_RECEIVE_AUDIO.getUUID().getShortUUID());
         voiceservice_receive_audio_found = true;
     }
+    printf("test\n");
 }
 
 void discovery_termination(ble::connection_handle_t connectionHandle) {
-    if (voiceservice_receive_audio_found) {
-        voiceservice_receive_audio_found = false;
-        mainQueue.call([]{ VOICESERVICE_RECEIVE_AUDIO.read(); });
+    
+    if (voiceservice_send_audio_found) {
+        printf("discovery term\n");
+        printf("%d value \n", voiceservice_send_audio_found);
+        //VOICESERVICE_RECEIVE_AUDIO.read();
+        mainQueue.call_every(1ms, []{ VOICESERVICE_SEND_AUDIO.read(); });
     }
     // also do for send?
 }
 
 
  void VoiceServiceClient::start(BLE &ble, events::EventQueue &event_queue) {
-    ble.gattClient().onDataWritten(on_write);
+    printf("start ran \n");
+    ble.gattClient().onDataRead(on_read);
 }
 
 void VoiceServiceClient::start_discovery(BLE &ble, events::EventQueue &event_queue, const ble::ConnectionCompleteEvent &event) {
@@ -87,7 +95,7 @@ void VoiceServiceClient::start_discovery(BLE &ble, events::EventQueue &event_que
     printf("And a characteristic with UUID 0xB001\r\n");
 
     ble.gattClient().onServiceDiscoveryTermination(discovery_termination);
-    // UUIN unknown is a wildcard that lets us find all characteristics
+    // UUID unknown is a wildcard that lets us find all characteristics
     ble.gattClient().launchServiceDiscovery(
         event.getConnectionHandle(),
         service_discovery,
@@ -100,14 +108,25 @@ void VoiceServiceClient::start_discovery(BLE &ble, events::EventQueue &event_que
 void VoiceServiceClient::sendAudio(uint8_t* audio_data, uint32_t size) {
     if (voiceservice_send_audio_found) {
         // printf("Data sent \n");
+        // BLE &ble = BLE::Instance();
+        // //printf("writing audio \n");
+        // int audioTransferIterations = (int) size / AUDIO_TRANSFER_SIZE;
+        // // printf("%d \n", audioTransferIterations);
+        // for (int i = 0; i < audioTransferIterations; i++) {
+        //     //printf("%d \n", (int) audio_data[i]);
+        //     VOICESERVICE_SEND_AUDIO.write(sizeof(audio_data[0]) * AUDIO_TRANSFER_SIZE, (uint8_t *)&audio_data[i * AUDIO_TRANSFER_SIZE]);
+        // }
+
+        // write one value at a time
         BLE &ble = BLE::Instance();
-        //printf("writing audio \n");
-        int audioTransferIterations = (int) size / AUDIO_TRANSFER_SIZE;
-        // printf("%d \n", audioTransferIterations);
-        for (int i = 0; i < audioTransferIterations; i++) {
-            //printf("%d \n", (int) audio_data[i]);
-            VOICESERVICE_SEND_AUDIO.write(sizeof(audio_data[0]) * AUDIO_TRANSFER_SIZE, (uint8_t *)&audio_data[i * AUDIO_TRANSFER_SIZE]);
+
+        // printf("%d \n", ble.gattClient().isCharacteristicDescriptorDiscoveryActive(VOICESERVICE_RECEIVE_AUDIO));
+        for (int i = 0; i < size; i++) {
+            //printf("data sent");
+            VOICESERVICE_RECEIVE_AUDIO.write(sizeof(audio_data[i]), (uint8_t *)&audio_data[i]);
         }
+
+        
     }
 }
 
