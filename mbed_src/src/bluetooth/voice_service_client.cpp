@@ -37,10 +37,10 @@ VoiceServiceClient::VoiceServiceClient()
 
 void on_read(const GattReadCallbackParams *response) {
     printf("Data received\n");
-    printf("SERVICE: Data written from server.\n");
+    // printf("SERVICE: Data written from server.\n");
 
     if (response->handle == VOICESERVICE_SEND_AUDIO.getValueHandle() && response->len == 1){
-        printf("SERVICE: Acquired new audio data! %u\n", *(response->data));
+        // printf("SERVICE: Acquired new audio data! %u\n", *(response->data));
 
         voiceService->playAudio((uint8_t *)response->data, VoiceServiceClient::AUDIO_TRANSFER_SIZE);
 
@@ -79,7 +79,7 @@ void discovery_termination(ble::connection_handle_t connectionHandle) {
         printf("discovery term\n");
         printf("%d value \n", voiceservice_send_audio_found);
         //VOICESERVICE_RECEIVE_AUDIO.read();
-        mainQueue.call_every(1ms, []{ VOICESERVICE_SEND_AUDIO.read(); });
+        // mainQueue.call_every(100ms, []{ VOICESERVICE_SEND_AUDIO.read(); });
     }
     // also do for send?
 }
@@ -106,7 +106,7 @@ void VoiceServiceClient::start_discovery(BLE &ble, events::EventQueue &event_que
 }
 
 void VoiceServiceClient::sendAudio(uint8_t* audio_data, uint32_t size) {
-    if (voiceservice_send_audio_found) {
+    if (voiceservice_receive_audio_found) {
         // printf("Data sent \n");
         // BLE &ble = BLE::Instance();
         // //printf("writing audio \n");
@@ -119,13 +119,14 @@ void VoiceServiceClient::sendAudio(uint8_t* audio_data, uint32_t size) {
 
         // write one value at a time
         BLE &ble = BLE::Instance();
-
+        //printf("data sent\n ");
         // printf("%d \n", ble.gattClient().isCharacteristicDescriptorDiscoveryActive(VOICESERVICE_RECEIVE_AUDIO));
+        // printf("%d \n", voiceservice_receive_audio_found);
+        // printf("data sent\n");
         for (int i = 0; i < size; i++) {
-            //printf("data sent");
             VOICESERVICE_RECEIVE_AUDIO.write(sizeof(audio_data[i]), (uint8_t *)&audio_data[i]);
         }
-
+        
         
     }
 }
