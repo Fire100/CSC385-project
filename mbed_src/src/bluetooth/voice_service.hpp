@@ -16,13 +16,13 @@ class VoiceService {
         uint8_t* play_audio_data;
         uint32_t play_audio_size;
         bool play_audio_decompress;
-
+        bool play_audio_new;
         void playAudioHelper(){
             if (play_audio_decompress){
                 decompressAudio(play_audio_data, play_audio_size);
             }
 
-            while (!audio->write(play_audio_data, play_audio_size)){
+            while (play_audio_new && !audio->write(play_audio_data, play_audio_size)){
                 audio->write_wait_ready();
             }
 
@@ -33,6 +33,8 @@ class VoiceService {
             if (play_audio_decompress){
                 free(play_audio_data);
             }
+
+            play_audio_new = false;
         }
 
         uint8_t* send_audio_data;
@@ -56,7 +58,7 @@ class VoiceService {
         static const uint32_t VOICESERVICE_START_UUID = 0xB001;
         static const uint32_t VOICESERVICE_RECEIVE_AUDIO_UUID = 0xB002;
         static const uint32_t VOICESERVICE_SEND_AUDIO_UUID = 0xB003;
-        static const uint32_t AUDIO_TRANSFER_SIZE = 1; // 1024
+        static const uint32_t AUDIO_TRANSFER_SIZE = 200; // 1024
 
         void sendAudioQueue(uint8_t* audio_data, uint32_t size){
             send_audio_data = audio_data;
@@ -68,6 +70,7 @@ class VoiceService {
             play_audio_data = audio_data;
             play_audio_size = size;
             play_audio_decompress = decompress;
+            play_audio_new = true;
             mainQueue.call(this, &VoiceService::playAudioHelper);
         }
 };

@@ -23,21 +23,31 @@ class VoiceServiceServer : ble::GattServer::EventHandler, public VoiceService {
 
         virtual void onDataWritten(const GattWriteCallbackParams &params) override;
 
+        virtual void onDataSent(const GattDataSentCallbackParams &params) override;
+
+        virtual void onAttMtuChange	(ble::connection_handle_t connectionHandle, uint16_t attMtuSize) override;	
         
     
     private:
         inline static const std::string start_name = "Audio Start";
         inline static const std::string received_name = "Recieved Audio";
         inline static const std::string sent_name = "Sent Audio";
+
+
+        Timer t;
+
+        uint8_t audio_buffer[8000];
+        int audio_buffer_idx = 0;
+
         
 
         ReadOnlyGattCharacteristic<uint8_t> *VOICESERVICE_START;
         uint8_t _voiceservice_start_value = 0;
 
-        WriteOnlyArrayGattCharacteristic<uint8_t, AUDIO_TRANSFER_SIZE> *VOICESERVICE_RECEIVE_AUDIO;
+        ReadWriteArrayGattCharacteristic<uint8_t, AUDIO_TRANSFER_SIZE> *VOICESERVICE_RECEIVE_AUDIO;
         uint8_t _voiceservice_recieve_audio_value = 0;
         
-        ReadOnlyArrayGattCharacteristic<uint8_t, AUDIO_TRANSFER_SIZE> *VOICESERVICE_SEND_AUDIO;
+        ReadWriteArrayGattCharacteristic<uint8_t, AUDIO_TRANSFER_SIZE> *VOICESERVICE_SEND_AUDIO;
         uint8_t _voiceservice_send_audio_value = 0;
 
         int currentDataSent = 0;
