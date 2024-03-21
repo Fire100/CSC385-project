@@ -12,7 +12,7 @@
 
 
 class VoiceService {
-    private:
+    protected:
         uint8_t* play_audio_data;
         uint32_t play_audio_size;
         bool play_audio_decompress;
@@ -35,6 +35,11 @@ class VoiceService {
             }
         }
 
+        uint8_t* send_audio_data;
+        uint32_t send_audio_size;
+
+        virtual void sendAudio() = 0;
+
         void decompressAudio(uint8_t* audio_data, uint32_t size){
             uint16_t* new_play_audio_data = (uint16_t*)malloc(size * sizeof(uint16_t));
             for (size_t ix = 0; ix < size; ix++) {
@@ -44,14 +49,22 @@ class VoiceService {
             play_audio_size *= 2;
         }
 
+
+
     public:
         static const uint32_t VOICESERVICE_UUID = 0xB000;
         static const uint32_t VOICESERVICE_START_UUID = 0xB001;
         static const uint32_t VOICESERVICE_RECEIVE_AUDIO_UUID = 0xB002;
         static const uint32_t VOICESERVICE_SEND_AUDIO_UUID = 0xB003;
-        static const uint32_t AUDIO_TRANSFER_SIZE = 1; // 1024
+        static const uint32_t AUDIO_TRANSFER_SIZE = 200; // 1024
+        int searchForChar;
 
-        virtual void sendAudio(uint8_t* audio_data, uint32_t size) = 0;
+        void sendAudioQueue(uint8_t* audio_data, uint32_t size){
+            send_audio_data = audio_data;
+            send_audio_size = size;
+            mainQueue.call(this, &VoiceService::sendAudio);
+        }
+
         void playAudio(uint8_t* audio_data, uint32_t size, bool decompress = true) {
             play_audio_data = audio_data;
             play_audio_size = size;

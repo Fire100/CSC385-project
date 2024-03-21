@@ -40,6 +40,7 @@ static BSP_AUDIO_Init_t MicParams;
 
 
 static uint8_t compressedBuf[TARGET_AUDIO_BUFFER_NB_SAMPLES];
+static uint8_t sendBuf[TARGET_AUDIO_BUFFER_NB_SAMPLES];
 static bool dataUpdated = false;
 #define PRIu16 "hu"
 /*

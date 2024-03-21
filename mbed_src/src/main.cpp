@@ -39,12 +39,12 @@ int main()
 
     if (CLIENT){
         voiceService = new VoiceServiceClient();
-        record_audio();
+        //record_audio();
         init_bluetooth_client();
     }
     else{
         voiceService = new VoiceServiceServer();
-        record_audio();
+        //record_audio();
         init_bluetooth();
     }
  }

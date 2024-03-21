@@ -28,6 +28,7 @@ VoiceServiceServer::VoiceServiceServer()
     VOICESERVICE_START = new ReadOnlyGattCharacteristic<uint8_t> (VOICESERVICE_START_UUID, 0, GattCharacteristic::BLE_GATT_CHAR_PROPERTIES_NOTIFY);
     VOICESERVICE_RECEIVE_AUDIO = new WriteOnlyArrayGattCharacteristic<uint8_t, AUDIO_TRANSFER_SIZE> (VOICESERVICE_RECEIVE_AUDIO_UUID, 0, GattCharacteristic::BLE_GATT_CHAR_PROPERTIES_NOTIFY);
     VOICESERVICE_SEND_AUDIO = new ReadOnlyArrayGattCharacteristic<uint8_t, AUDIO_TRANSFER_SIZE> (VOICESERVICE_SEND_AUDIO_UUID, 0, GattCharacteristic::BLE_GATT_CHAR_PROPERTIES_NOTIFY);
+    
 }
 
 void VoiceServiceServer::start()
@@ -42,6 +43,7 @@ void VoiceServiceServer::start()
     ble.gattServer().addService(voice_service_service);
 
     ble.gattServer().setEventHandler(this);
+    
 
     // This is test code. remove this when audio setup is done
     // uint16_t start = 12;
@@ -51,15 +53,15 @@ void VoiceServiceServer::start()
     // server.write(VOICESERVICE_RECEIVE_AUDIO->getValueHandle(), (uint8_t*)&audio, sizeof(audio));
 };
 
-void VoiceServiceServer::sendAudio(uint8_t* audio_data, uint32_t size) {
+void VoiceServiceServer::sendAudio() {
 
     BLE &ble = BLE::Instance();
     //printf("writing audio \n");
-    int audioTransferIterations = (int) size / AUDIO_TRANSFER_SIZE;
+    int audioTransferIterations = (int) send_audio_size / AUDIO_TRANSFER_SIZE;
     // printf("%d \n", audioTransferIterations);
     for (int i = 0; i < audioTransferIterations; i++) {
         //printf("%d \n", (int) audio_data[i]);
-        ble.gattServer().write(VOICESERVICE_SEND_AUDIO->getValueHandle(), (uint8_t *)&audio_data[i * AUDIO_TRANSFER_SIZE], sizeof(audio_data[0]) * AUDIO_TRANSFER_SIZE);
+        ble.gattServer().write(VOICESERVICE_SEND_AUDIO->getValueHandle(), (uint8_t *)&send_audio_data[i * AUDIO_TRANSFER_SIZE], sizeof(send_audio_data[0]) * AUDIO_TRANSFER_SIZE);
     }
 
     // write one value at a time
