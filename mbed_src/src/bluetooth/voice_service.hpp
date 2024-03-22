@@ -58,7 +58,7 @@ class VoiceService {
         static const uint32_t VOICESERVICE_START_UUID = 0xB001;
         static const uint32_t VOICESERVICE_RECEIVE_AUDIO_UUID = 0xB002;
         static const uint32_t VOICESERVICE_SEND_AUDIO_UUID = 0xB003;
-        static const uint32_t AUDIO_TRANSFER_SIZE = 200; // 1024
+        static const uint32_t AUDIO_TRANSFER_SIZE = 250; // 1024
 
         void sendAudioQueue(uint8_t* audio_data, uint32_t size){
             send_audio_data = audio_data;
