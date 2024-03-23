@@ -56,11 +56,14 @@ void VoiceServiceServer::sendAudio() {
 
     BLE &ble = BLE::Instance();
     //printf("writing audio \n");
+
     int audioTransferIterations = (int) send_audio_size / AUDIO_TRANSFER_SIZE;
+    printf("SENDING AUDIO %d %d\n", send_audio_size, audioTransferIterations);
     // printf("%d \n", audioTransferIterations);
     for (int i = 0; i < audioTransferIterations; i++) {
         ble.gattServer().write(VOICESERVICE_SEND_AUDIO->getValueHandle(), (uint8_t *)&send_audio_data[i * AUDIO_TRANSFER_SIZE], sizeof(send_audio_data[0]) * AUDIO_TRANSFER_SIZE);
     }
+    printf("DONE SEND\n");
 }
 
 void VoiceServiceServer::onDataSent(const GattDataSentCallbackParams &params){
