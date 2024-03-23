@@ -26,9 +26,8 @@ VoiceServiceServer::VoiceServiceServer()
     // VOICESERVICE_SEND_AUDIO = new ReadOnlyArrayGattCharacteristic<uint8_t, AUDIO_TRANSFER_SIZE> (VOICESERVICE_SEND_AUDIO_UUID, 0, GattCharacteristic::BLE_GATT_CHAR_PROPERTIES_NOTIFY, descriptorsSentAudio, sizeof(descriptorsSentAudio)/sizeof(GattAttribute*));
     
     VOICESERVICE_START = new ReadOnlyGattCharacteristic<uint8_t> (VOICESERVICE_START_UUID, 0, GattCharacteristic::BLE_GATT_CHAR_PROPERTIES_NOTIFY);
-    VOICESERVICE_RECEIVE_AUDIO = new WriteOnlyArrayGattCharacteristic<uint8_t, AUDIO_TRANSFER_SIZE> (VOICESERVICE_RECEIVE_AUDIO_UUID, 0, GattCharacteristic::BLE_GATT_CHAR_PROPERTIES_NOTIFY);
-    VOICESERVICE_SEND_AUDIO = new ReadOnlyArrayGattCharacteristic<uint8_t, AUDIO_TRANSFER_SIZE> (VOICESERVICE_SEND_AUDIO_UUID, 0, GattCharacteristic::BLE_GATT_CHAR_PROPERTIES_NOTIFY);
-    
+    VOICESERVICE_RECEIVE_AUDIO = new ReadWriteArrayGattCharacteristic<uint8_t, AUDIO_TRANSFER_SIZE> (VOICESERVICE_RECEIVE_AUDIO_UUID, 0, GattCharacteristic::BLE_GATT_CHAR_PROPERTIES_NOTIFY | GattCharacteristic::BLE_GATT_CHAR_PROPERTIES_WRITE_WITHOUT_RESPONSE);
+    VOICESERVICE_SEND_AUDIO = new ReadWriteArrayGattCharacteristic<uint8_t, AUDIO_TRANSFER_SIZE> (VOICESERVICE_SEND_AUDIO_UUID, 0, GattCharacteristic::BLE_GATT_CHAR_PROPERTIES_NOTIFY | GattCharacteristic::BLE_GATT_CHAR_PROPERTIES_WRITE_WITHOUT_RESPONSE);
 }
 
 void VoiceServiceServer::start()
@@ -60,23 +59,40 @@ void VoiceServiceServer::sendAudio() {
     int audioTransferIterations = (int) send_audio_size / AUDIO_TRANSFER_SIZE;
     // printf("%d \n", audioTransferIterations);
     for (int i = 0; i < audioTransferIterations; i++) {
-        //printf("%d \n", (int) audio_data[i]);
         ble.gattServer().write(VOICESERVICE_SEND_AUDIO->getValueHandle(), (uint8_t *)&send_audio_data[i * AUDIO_TRANSFER_SIZE], sizeof(send_audio_data[0]) * AUDIO_TRANSFER_SIZE);
     }
-
-    // write one value at a time
-    // BLE &ble = BLE::Instance();
-    // for (int i = 0; i < size; i++) {
-    //     ble.gattServer().write(VOICESERVICE_SEND_AUDIO->getValueHandle(), (uint8_t *)&audio_data[i], sizeof(audio_data[i]));
-    // }
 }
 
-void VoiceServiceServer::onDataWritten(const GattWriteCallbackParams &params) {
-    printf("SERVICE: Data written from client.\n");
+void VoiceServiceServer::onDataSent(const GattDataSentCallbackParams &params){
+    // printf("SENT DATA\n");
+}
 
-    if (params.handle == VOICESERVICE_RECEIVE_AUDIO->getValueHandle() && params.len == 1){
-        printf("SERVICE: Acquired new audio data! %u\n", *params.data);
-        this->playAudio((uint8_t *)params.data, AUDIO_TRANSFER_SIZE);
+void VoiceServiceServer::onAttMtuChange(ble::connection_handle_t connectionHandle, uint16_t attMtuSize) {
+    printf("MTTUSIZE: %d %u\n", connectionHandle, attMtuSize);
+}
+
+
+void VoiceServiceServer::onDataWritten(const GattWriteCallbackParams &params) {
+    // printf("SERVICE: Data written from client.\n");
+
+
+    if (params.handle == VOICESERVICE_RECEIVE_AUDIO->getValueHandle() && params.len == AUDIO_TRANSFER_SIZE){
+        // printf("SERVICE: Acquired new audio data! %u\n", *params.data);
+
+        if (audio_buffer_idx == 0){
+            t.start();
+        }
+        int to_copy = min((int)AUDIO_TRANSFER_SIZE, 8000 - audio_buffer_idx);
+        memcpy(audio_buffer + audio_buffer_idx, params.data, to_copy);
+        audio_buffer_idx += to_copy;
+        printf("NEW AUDIO DATA: %d", audio_buffer_idx);
+        if (audio_buffer_idx >= 8000){
+            t.stop();
+            printf("On Data Written: %llu ms\n", t.elapsed_time().count());
+
+            this->playAudio(audio_buffer, 8000);
+            audio_buffer_idx = 0;
+        }
 
     }
 }
