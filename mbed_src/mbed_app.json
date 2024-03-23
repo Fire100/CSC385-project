@@ -1,25 +1,33 @@
 {
-    "target_overrides": {
+     "target_overrides": {
         "K64F": {
             "target.components_add": ["BlueNRG_MS"],
             "target.features_add": ["BLE"],
-            "target.extra_labels_add": ["CORDIO"]
+            "target.extra_labels_add": ["CORDIO"],
+            "cordio_ll.max-acl-size": 250
         },
         "NUCLEO_F401RE": {
             "target.components_add": ["BlueNRG_MS"],
             "target.features_add": ["BLE"],
-            "target.extra_labels_add": ["CORDIO"]
+            "target.extra_labels_add": ["CORDIO"],
+            "cordio_ll.max-acl-size": 250
         },
         "NRF52840_DK": {
-            "target.features_add": ["BLE"]
+            "target.features_add": ["BLE"],
+            "cordio_ll.max-acl-size": 250
         },
         "NRF52_DK": {
-            "target.features_add": ["BLE"]
+            "target.features_add": ["BLE"],
+            "cordio_ll.max-acl-size": 250
+        },
+        "SPBTLE-RF": {
+            "cordio_ll.max-acl-size": 250
         },
         "*": {
         "platform.minimal-printf-enable-floating-point": true,
         "platform.stdio-baud-rate": 115200,
         "platform.callback-nontrivial": true
       }
+      
     }
 }
