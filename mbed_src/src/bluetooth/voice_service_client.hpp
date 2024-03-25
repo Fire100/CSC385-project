@@ -21,6 +21,8 @@ class VoiceServiceClient : public VoiceService,  ble::GattClient::EventHandler {
         void start_discovery(BLE &ble, events::EventQueue &event_queue, const ble::ConnectionCompleteEvent &event);
 
         void sendAudio() override;
+
+       	
         
 
         // virtual void onDataRead(const GattReadCallbackParams &params) override;
@@ -31,6 +33,7 @@ class VoiceServiceClient : public VoiceService,  ble::GattClient::EventHandler {
         
     
     private:
+        virtual void onAttMtuChange(ble::connection_handle_t connectionHandle, uint16_t attMtuSize) override;
         // ReadOnlyGattCharacteristic<uint8_t> *VOICESERVICE_START;
         // uint8_t _voiceservice_start_value = 0;
 

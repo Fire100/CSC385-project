@@ -209,13 +209,12 @@ void discovery_termination(ble::connection_handle_t connectionHandle) {
     printf("start ran \n");
     //ble.gattClient().onHVX(on_read);
     
+    
 }
 
 void VoiceServiceClient::start_discovery(BLE &ble, events::EventQueue &event_queue, const ble::ConnectionCompleteEvent &event) {
     printf("We are looking for a service with UUID 0xB000\r\n");
     printf("And a characteristic with UUID 0xB001\r\n");
-
-    //ble.gattClient().negotiateAttMtu(event.getConnectionHandle());
 
     ble.gattClient().onServiceDiscoveryTermination(discovery_termination);
     // UUID unknown is a wildcard that lets us find all characteristics
@@ -226,6 +225,10 @@ void VoiceServiceClient::start_discovery(BLE &ble, events::EventQueue &event_que
         VoiceServiceClient::VOICESERVICE_UUID,
         BLE_UUID_UNKNOWN
     );
+
+    ble.gattClient().setEventHandler(this);
+    ble.gattClient().negotiateAttMtu(event.getConnectionHandle());
+
 
     record_audio();
 }
@@ -256,6 +259,10 @@ void VoiceServiceClient::sendAudio() {
         // }
         
     }
+}
+
+void VoiceServiceClient::onAttMtuChange(ble::connection_handle_t connectionHandle, uint16_t attMtuSize) {
+    printf("MTTUSIZE: %d %u\n", connectionHandle, attMtuSize);
 }
 
 // void VoiceService::onDataRead(const GattReadCallbackParams &params) {
