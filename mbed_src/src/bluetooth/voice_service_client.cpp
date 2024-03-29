@@ -10,6 +10,7 @@
 uint16_t _discovered_UUID = 0x0000;
 GattAttribute::Handle_t _CCCD_handle(0);
 
+
 VoiceServiceClient::VoiceServiceClient()
 {
     voiceservice_receive_audio_found = false;
@@ -39,9 +40,59 @@ VoiceServiceClient::VoiceServiceClient()
     // Set an event handler that is called after a connected peer has written an attribute.
     // server.onDataWritten(VoiceService::onDataWritten);
     searchForChar = 0;
+    hvx_count = 0;
+
+    audio_buffer_idx = 0;
+    audio_buffer = new uint8_t[audio_buffer_size];
 }
 
+
 void on_read(const GattHVXCallbackParams *response) {
+    voiceService->receiving_audio = 1;
+    printf("Data received\n");
+    printf("SERVICE: Data written from server.\n");
+    printf("%d \n", response->len);
+    printf("%d \n", VOICESERVICE_SEND_AUDIO.getValueHandle());
+    printf("%d \n", VOICESERVICE_RECEIVE_AUDIO.getValueHandle());
+    printf("%d \n", response->handle);
+    printf("SERVICE: Acquired new audio data! %u\n",*(response->data));
+
+
+    voiceService->hvx_count++;
+    printf("\nhvx_count: %d \n", voiceService->hvx_count);
+
+    if (response->handle == VOICESERVICE_SEND_AUDIO.getValueHandle() && response->len == VoiceServiceClient::AUDIO_TRANSFER_SIZE){
+        printf("SERVICE: Acquired new audio data! %u\n", *(response->data));
+
+
+        int to_copy = min((int)VoiceServiceClient::AUDIO_TRANSFER_SIZE, voiceService->audio_buffer_size - voiceService->audio_buffer_idx);
+        printf("TO_COPY: %d\n", to_copy);
+        memcpy(voiceService->audio_buffer + voiceService->audio_buffer_idx, response->data, to_copy);
+        printf("DONE MEMCPY\n");
+
+        voiceService->audio_buffer_idx += to_copy;
+        printf("NEW AUDIO DATA: %d", voiceService->audio_buffer_idx);
+        if (voiceService->audio_buffer_idx >= voiceService->audio_buffer_size){
+            // t.stop();
+            printf("On Data Written\n");
+
+            voiceService->playAudio(voiceService->audio_buffer, voiceService->audio_buffer_size);
+            voiceService->audio_buffer_idx = 0;
+        }
+        //voiceService->playAudio((uint8_t)response->data, VoiceServiceClient::AUDIO_TRANSFER_SIZE);
+
+    }
+
+
+    if (voiceService->hvx_count >= voiceService->audio_iteration) {
+        voiceService->receiving_audio = 0;
+        voiceService->hvx_count = 0;
+    }
+}
+
+
+void on_read_two(const GattReadCallbackParams *response) {
+    printf("\n On data read called\n");
     printf("Data received\n");
     printf("SERVICE: Data written from server.\n");
     printf("%d \n", response->len);
@@ -50,11 +101,12 @@ void on_read(const GattHVXCallbackParams *response) {
     printf("%d \n", response->handle);
     printf("SERVICE: Acquired new audio data! %u\n", *(response->data));
 
+
     
     if (response->handle == VOICESERVICE_SEND_AUDIO.getValueHandle() && response->len == VoiceServiceClient::AUDIO_TRANSFER_SIZE){
         printf("SERVICE: Acquired new audio data! %u\n", *(response->data));
 
-        voiceService->playAudio((uint8_t *)response->data, VoiceServiceClient::AUDIO_TRANSFER_SIZE);
+        //voiceService->playAudio((uint8_t *)response->data, VoiceServiceClient::AUDIO_TRANSFER_SIZE);
 
     }
 
@@ -70,6 +122,8 @@ void service_discovery(const DiscoveredService *service) {
 }
 
 void characteristic_discovery(const DiscoveredCharacteristic *characteristic) {
+    printf("characteristic run\n");
+    printf("uuid %u \n", characteristic->getUUID().getShortUUID());
     if (characteristic->getUUID().getShortUUID() == VoiceServiceClient::VOICESERVICE_SEND_AUDIO_UUID) {
         printf("We found the send audio characteristic\r\n");
         VOICESERVICE_SEND_AUDIO = *characteristic;
@@ -153,6 +207,7 @@ void descriptorDiscoveryTerminationCallback(
     printf("cccd with handle [%u] found!\r\n", _CCCD_handle);
     mainQueue.call(write_cccd);
 
+    record_audio();
 }
 
 void write_cccd() {
@@ -165,14 +220,16 @@ void write_cccd() {
     if (voiceService->searchForChar == 0) characteristic = &VOICESERVICE_SEND_AUDIO;
     else characteristic = &VOICESERVICE_RECEIVE_AUDIO;
 
-    // client.negotiateAttMtu(VOICESERVICE_RECEIVE_AUDIO.getConnectionHandle());
-    // ble_error_t err = client.write(
-    //     GattClient::GATT_OP_WRITE_REQ,
-    //     characteristic->getConnectionHandle(),
-    //     _CCCD_handle,
-    //     sizeof(cccd_value),
-    //     (uint8_t*) &cccd_value
-    // );
+
+    client.negotiateAttMtu(VOICESERVICE_RECEIVE_AUDIO.getConnectionHandle());
+    ble_error_t err = client.write(
+        GattClient::GATT_OP_WRITE_REQ,
+        characteristic->getConnectionHandle(),
+        _CCCD_handle,
+        sizeof(cccd_value),
+        (uint8_t*) &cccd_value
+    );
+    
 
     // if(err == 0){
     //     printf("cccd update sent successful\r\n");
@@ -194,9 +251,9 @@ void write_cccd() {
 
 void discovery_termination(ble::connection_handle_t connectionHandle) {
     
-    if (voiceservice_send_audio_found) {
+    if (voiceservice_receive_audio_found) {
         printf("discovery term\n");
-        printf("%d value \n", voiceservice_send_audio_found);
+        printf("%d value \n", voiceservice_receive_audio_found);
         mainQueue.call(look_for_Descriptors);
         //VOICESERVICE_RECEIVE_AUDIO.read();
         // mainQueue.call_every(100ms, []{ VOICESERVICE_SEND_AUDIO.read(); });
@@ -207,8 +264,8 @@ void discovery_termination(ble::connection_handle_t connectionHandle) {
 
  void VoiceServiceClient::start(BLE &ble, events::EventQueue &event_queue) {
     printf("start ran \n");
-    //ble.gattClient().onHVX(on_read);
-    
+    ble.gattClient().onHVX(on_read);
+    ble.gattClient().onDataRead(on_read_two);
     
 }
 
@@ -226,25 +283,57 @@ void VoiceServiceClient::start_discovery(BLE &ble, events::EventQueue &event_que
         BLE_UUID_UNKNOWN
     );
 
-    ble.gattClient().setEventHandler(this);
-    ble.gattClient().negotiateAttMtu(event.getConnectionHandle());
+    //ble.gattClient().setEventHandler(this);
+    // ble.gattClient().negotiateAttMtu(event.getConnectionHandle());
 
-
-    record_audio();
 }
 
 
 void VoiceServiceClient::sendAudio() {
-    if (voiceservice_send_audio_found) {
+    // BLE &ble = BLE::Instance();
+    //printf("discorvery active %d \n", ble.gattClient().isch);
+    //printf("called send\n");
+
+    if (voiceservice_send_audio_found && buffer_location < 40 && voiceService->sending_audio) {
         // printf("Data sent \n");
         BLE &ble = BLE::Instance();
         //printf("writing audio \n");
+        //printf("%d \n", send_audio_size);
         int audioTransferIterations = (int) send_audio_size / AUDIO_TRANSFER_SIZE;
+        printf("position %d \n", this->buffer_location);
+        // printf("transfer %d \n", audioTransferIterations);
         // printf("%d \n", audioTransferIterations);
-        for (int i = 0; i < audioTransferIterations; i++) {
+        // VOICESERVICE_RECEIVE_AUDIO.write(sizeof(send_audio_data[0]) * send_audio_size, (uint8_t *)&send_audio_data);
+        for (int i = 0; i < 1; i++) {
             //printf("%d \n", (int) send_audio_data[i]);
-            VOICESERVICE_RECEIVE_AUDIO.writeWoResponse(sizeof(send_audio_data[0]) * AUDIO_TRANSFER_SIZE, (uint8_t *)&send_audio_data[i * AUDIO_TRANSFER_SIZE]);
+            //printf("writing loop\n");
+            //printf("iteration: %d\n", i);
+            printf("total: %d\n", audioTransferIterations);
+            printf("characteristic disco receive %u \n", ble.gattClient().isCharacteristicDescriptorDiscoveryActive(VOICESERVICE_RECEIVE_AUDIO));
+            printf("characteristic disco send %u \n", ble.gattClient().isCharacteristicDescriptorDiscoveryActive(VOICESERVICE_SEND_AUDIO));
+
+            printf("about to write\n");
+            ble_error_t err = VOICESERVICE_RECEIVE_AUDIO.writeWoResponse(sizeof(send_audio_data[0]) * AUDIO_TRANSFER_SIZE, (uint8_t *)&send_audio_data[this->buffer_location * AUDIO_TRANSFER_SIZE]);
+            this->buffer_location++;
+
+            printf("error: %u \n", err);
+
+            for (int j = 0; j < 20; j++) {
+                // printf("data sent\n");
+                printf("%u ", send_audio_data[this->buffer_location * AUDIO_TRANSFER_SIZE + j]);
+                
+            }
+            printf("\n");
+
         }
+        printf("\n");
+
+        if (this->buffer_location >= voiceService->audio_iteration) {
+            this->sending_audio = 0;
+            this->buffer_location = 0;
+        }
+        
+        
 
         // // write one value at a time
         // BLE &ble = BLE::Instance();
@@ -255,15 +344,18 @@ void VoiceServiceClient::sendAudio() {
         //     // printf("data sent\n");
         //     //ThisThread::sleep_for(500);
         //     // VOICESERVICE_RECEIVE_AUDIO.write(sizeof(send_audio_data[i]), (uint8_t *)&send_audio_data[i]);
-        //     VOICESERVICE_RECEIVE_AUDIO.writeWoResponse(sizeof(send_audio_data[i]), (uint8_t *)&send_audio_data[i]);
+        //     printf("%u ", send_audio_data[i]);
+        //     VOICESERVICE_RECEIVE_AUDIO.write(sizeof(send_audio_data[i]), (uint8_t *)&send_audio_data[i]);
         // }
+        // printf("\n");
+        // ThisThread::sleep_for(1000ms);
         
     }
 }
 
-void VoiceServiceClient::onAttMtuChange(ble::connection_handle_t connectionHandle, uint16_t attMtuSize) {
-    printf("MTTUSIZE: %d %u\n", connectionHandle, attMtuSize);
-}
+// void VoiceServiceClient::onAttMtuChange(ble::connection_handle_t connectionHandle, uint16_t attMtuSize) {
+//     printf("MTTUSIZE: %d %u\n", connectionHandle, attMtuSize);
+// }
 
 // void VoiceService::onDataRead(const GattReadCallbackParams &params) {
 //     printf("Data read\n");
@@ -284,4 +376,4 @@ void VoiceServiceClient::onAttMtuChange(ble::connection_handle_t connectionHandl
 //     // ble.gattServer().read(VOICESERVICE_RECEIVE_AUDIO.getValueHandle(), (uint8_t *)&dataIn, sizeof(dataIn));
 //     // dataIn = *(params.data);
 //  
-//}
+// }

@@ -20,8 +20,10 @@
         "platform.minimal-printf-enable-floating-point": true,
         "platform.stdio-baud-rate": 115200,
         "platform.callback-nontrivial": true,
-        "cordio.desired-att-mtu" : 500,
-        "cordio.rx-acl-buffer-size" : 504
+        "cordio.desired-att-mtu" : 250,
+        "cordio.rx-acl-buffer-size" : 254,
+        "mbed-trace.enable": true,
+         "mbed-trace.max-level": "TRACE_LEVEL_DEBUG"
       }
     }
 }
