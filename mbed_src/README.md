@@ -15,5 +15,8 @@ we want to connect to. In our case, it should be "Bluetooth Phone":
     }
 ```
 
-
-
+In the same file, change line 115 to be:
+```
+    const ble::ConnectionParameters connection_params(ble::phy_t::LE_1M, ble::scan_window_t::min(), ble::conn_interval_t::min(), ble::conn_interval_t::min());
+```
+This changes the connection interval to be a few millescond quicker, increasing throughput.
