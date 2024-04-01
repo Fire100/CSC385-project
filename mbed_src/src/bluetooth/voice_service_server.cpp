@@ -64,7 +64,6 @@ void VoiceServiceServer::start()
 
 
 void VoiceServiceServer::onUpdatesEnabled(const GattUpdatesEnabledCallbackParams &params){
-    printf("UPDATES ENABLED!\n");
     record_audio();
 }
 
@@ -84,24 +83,13 @@ void VoiceServiceServer::sendAudio() {
         
     }
 }
-
-void VoiceServiceServer::onDataSent(const GattDataSentCallbackParams &params){
-    printf("SENT DATA\n");
-}
-
-void VoiceServiceServer::onAttMtuChange(ble::connection_handle_t connectionHandle, uint16_t attMtuSize) {
-    printf("MTTUSIZE: %d %u\n", connectionHandle, attMtuSize);
-}
-
 void VoiceServiceServer::onDataWritten(const GattWriteCallbackParams &params) {
-    // printf("SERVICE: Data written from client.\n");
+    printf("SERVICE: Data written from client.\n");
 
     if (params.handle == VOICESERVICE_RECEIVE_AUDIO->getValueHandle() && params.len == AUDIO_TRANSFER_SIZE){
         voiceService->receiving_audio = 1;
         voiceService->hvx_count++;
         
-        printf("SERVICE: Acquired new audio data! %u\n", *params.data);
-
         // if (audio_buffer_idx == 0){
         //     t.start();
         // }
@@ -109,16 +97,12 @@ void VoiceServiceServer::onDataWritten(const GattWriteCallbackParams &params) {
         // this->playAudio((uint8_t*)params.data, AUDIO_TRANSFER_SIZE);
         
         int to_copy = min((int)AUDIO_TRANSFER_SIZE, voiceService->audio_buffer_size - (int)audio_buffer_idx);
-        printf("TO_COPY: %d\n", to_copy);
         memcpy(audio_buffer + audio_buffer_idx, params.data, to_copy);
-        printf("DONE MEMCPY\n");
 
         audio_buffer_idx += to_copy;
-        printf("NEW AUDIO DATA: %d", audio_buffer_idx);
+        printf("Audio Data Index: %d\n", audio_buffer_idx);
         if (audio_buffer_idx >= voiceService->audio_buffer_size){
             // t.stop();
-            printf("On Data Written\n");
-
             this->playAudio(audio_buffer, voiceService->audio_buffer_size);
             audio_buffer_idx = 0;
         }

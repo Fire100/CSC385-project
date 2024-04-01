@@ -25,12 +25,6 @@ class VoiceServiceServer : ble::GattServer::EventHandler, public VoiceService {
 
 
         virtual void onUpdatesEnabled(const GattUpdatesEnabledCallbackParams &params) override;
-
-
-        virtual void onDataSent(const GattDataSentCallbackParams &params) override;
-
-        virtual void onAttMtuChange	(ble::connection_handle_t connectionHandle, uint16_t attMtuSize) override;	
-        
     
     private:
         inline static const std::string start_name = "Audio Start";

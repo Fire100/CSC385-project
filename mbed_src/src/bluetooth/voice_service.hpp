@@ -21,16 +21,13 @@ class VoiceService {
         int buffer_location = 0;
 
         void playAudioHelper(){
-            printf("play 1\n");
             if (play_audio_decompress){
                 decompressAudio(play_audio_data, play_audio_size);
             }
-            printf("play 2\n");
 
             while (play_audio_new && !audio->write(play_audio_data, play_audio_size)){
                 audio->write_wait_ready();
             }
-            printf("play 3\n");
 
             if (audio->write_underflows(true) != 0){
                 // printf("Playing audio caused an underflow\n");
@@ -68,7 +65,7 @@ class VoiceService {
         static const uint32_t VOICESERVICE_START_UUID = 0xB001;
         static const uint32_t VOICESERVICE_RECEIVE_AUDIO_UUID = 0xB002;
         static const uint32_t VOICESERVICE_SEND_AUDIO_UUID = 0xB003;
-        static const uint32_t AUDIO_TRANSFER_SIZE = 192; // 1024
+        static const uint32_t AUDIO_TRANSFER_SIZE = 200; // 1024
         int searchForChar;
 
         int sending_audio = 0;
