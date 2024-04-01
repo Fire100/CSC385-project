@@ -23,22 +23,9 @@ class VoiceServiceClient : public VoiceService {
         void sendAudio() override;
 
 
-       	
-        
-
-        // virtual void onDataRead(const GattReadCallbackParams &params) override;
-
-        // virtual void onDataWritten(const GattWriteCallbackParams &params) override;
-
-        // virtual void onDataSent(const GattDataSentCallbackParams &params) override;
-        
     
     private:
-        // virtual void onAttMtuChange(ble::connection_handle_t connectionHandle, uint16_t attMtuSize) override;
-        // ReadOnlyGattCharacteristic<uint8_t> *VOICESERVICE_START;
-        // uint8_t _voiceservice_start_value = 0;
-
-        
+  
         uint8_t _voiceservice_receive_audio_value = 0;
 
         uint8_t _voiceservice_send_audio_value = 0;
@@ -54,7 +41,6 @@ static DiscoveredCharacteristic VOICESERVICE_SEND_AUDIO;
 static bool voiceservice_send_audio_found = false;
 
 
-void on_read_two(const GattReadCallbackParams *response);
 void on_read(const GattHVXCallbackParams *response);
 void service_discovery(const DiscoveredService *service);
 void characteristic_discovery(const DiscoveredCharacteristic *characteristic) ;
