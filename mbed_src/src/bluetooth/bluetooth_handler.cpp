@@ -2,6 +2,7 @@
 #include "pretty_print.hpp"
 #include "bluetooth_handler.hpp"
 #include "globals.hpp"
+#include "recordAudio.hpp"
 #include "voice_service_server.hpp"
 
 static const ble::AdvertisingParameters advertising_params(
@@ -29,6 +30,9 @@ void advertise()
 
     ble::AdvertisingDataSimpleBuilder<ble::LEGACY_ADVERTISING_MAX_SIZE> data_builder;
     data_builder.setFlags();
+
+    ble::conn_interval_t pref_interval(125);
+    data_builder.setConnectionIntervalPreference(pref_interval, pref_interval);
     
     data_builder.setName("Bluetooth Phone");
     data_builder.setLocalService(VoiceServiceServer::VOICESERVICE_UUID);
@@ -75,6 +79,8 @@ void on_init_complete(BLE::InitializationCompleteCallbackContext *event)
     // Rely on the event queue to advertise the device over BLE
     // TODO: probably don't need this
     mainQueue.call(advertise);
+
+    // record_audio();
 }
 
 

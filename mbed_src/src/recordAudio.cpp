@@ -4,15 +4,28 @@
 Timer t;
 bool compressionOn = true;
 
+
+InterruptIn button(BUTTON1);
+
 // callback that gets invoked when TARGET_AUDIO_BUFFER is full
 void target_audio_buffer_full() {
-    t.stop();
-    // printf("Recording time: %llu ms\n", t.elapsed_time().count());
-    t.reset();
+    printf("about to start\n");
+    int32_t ret = BSP_AUDIO_IN_Pause(AUDIO_INSTANCE);
+    if (ret != BSP_ERROR_NONE) {
+        printf("Error Audio Pause (%d)\n", ret);
+    }
+    else {
+        printf("OK Audio Pause\n");
+    }    
 
-    // compression
+    // t.stop();
+    // // printf("Recording time: %llu ms\n", t.elapsed_time().count());
+    // t.reset();
 
-    t.start();
+    // // compression
+    // // printf("target full \n");
+
+    // t.start();
 
     if (compressionOn) {
         for (size_t ix = 0; ix < TARGET_AUDIO_BUFFER_NB_SAMPLES; ix++) {
@@ -22,7 +35,7 @@ void target_audio_buffer_full() {
 
     }
 
-    t.stop();
+    //t.stop();
     // printf("Compression time: %llu ms\n", t.elapsed_time().count());
 
     //might need to to multithreaded locking for updating this node.
@@ -70,20 +83,17 @@ void target_audio_buffer_full() {
     
 
     // TODO: Send data in TARGET_AUDIO_BUFFER to bluetooth
-    
     if (compressionOn){
         memcpy(sendBuf, compressedBuf, TARGET_AUDIO_BUFFER_NB_SAMPLES);
         voiceService->sendAudioQueue((uint8_t*)sendBuf, TARGET_AUDIO_BUFFER_NB_SAMPLES);
-        //voiceService->playAudio((uint8_t*)compressedBuf, TARGET_AUDIO_BUFFER_NB_SAMPLES, true);
     } else {
         voiceService->sendAudioQueue((uint8_t*)TARGET_AUDIO_BUFFER, TARGET_AUDIO_BUFFER_NB_SAMPLES * 2);
-        //voiceService->playAudio((uint8_t*)TARGET_AUDIO_BUFFER, TARGET_AUDIO_BUFFER_NB_SAMPLES * 2, false);
     }
     
 
     TARGET_AUDIO_BUFFER_IX = 0; // reset audio buffer idx to begin recording agiai
     // printf("\n");
-    t.start();
+    //t.start();
 }
 
 /**
@@ -144,6 +154,12 @@ void print_audio(){
     printf("\n");
 }
 
+void set_sending_audio(){
+    if (!voiceService->sending_audio && !voiceService->receiving_audio){
+        BSP_AUDIO_IN_Resume(AUDIO_INSTANCE);
+    }
+}
+
 void record_audio(){
 
     int32_t ret;
@@ -168,5 +184,15 @@ void record_audio(){
         printf("OK Audio Record\n");
     }
 
-    t.start();
+    ret = BSP_AUDIO_IN_Pause(AUDIO_INSTANCE);
+    if (ret != BSP_ERROR_NONE) {
+        printf("Error Audio Pause (%d)\n", ret);
+    }
+    else {
+        printf("OK Audio Pause\n");
+    }    
+
+    button.fall(set_sending_audio);
+
+    //t.start();
 }

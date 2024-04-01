@@ -11,7 +11,7 @@
 #include "globals.hpp"
 #include "voice_service_client.hpp"
 #include "voice_service.hpp"
-
+#include "mbed_trace.h"
 
 EventQueue mainQueue;
 USBAudio* audio = new USBAudio(true, wavFreq, 1, wavFreq);
@@ -19,6 +19,7 @@ VoiceService* voiceService;
 
 int main()
 {
+    // mbed_trace_init();
     printf("Hello from microphone demo\n");
 
     // set up the microphone
@@ -39,12 +40,15 @@ int main()
 
     if (CLIENT){
         voiceService = new VoiceServiceClient();
+
+        mainQueue.call_every(4000ms, callback(voiceService, &VoiceService::sendAudio));
         //record_audio();
         init_bluetooth_client();
     }
     else{
         voiceService = new VoiceServiceServer();
         //record_audio();
+        mainQueue.call_every(4000ms, callback(voiceService, &VoiceService::sendAudio));
         init_bluetooth();
     }
  }

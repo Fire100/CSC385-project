@@ -4,12 +4,14 @@
 #include "gatt_client_process.h"
 
 
+
+
 void init_bluetooth_client()
 {
     printf("Initializing Bluetooth\n");
+    printf("sample size %u \n", TARGET_AUDIO_BUFFER_NB_SAMPLES);
 
     VoiceServiceClient voiceServiceClient{};
-    
 
     // The BLE class is a singleton
     BLE &ble = BLE::Instance();
