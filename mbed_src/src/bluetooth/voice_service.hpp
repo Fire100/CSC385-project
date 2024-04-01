@@ -21,7 +21,6 @@ class VoiceService {
         int buffer_location = 0;
 
         void playAudioHelper(){
-            printf("play 1\n");
             if (play_audio_decompress){
                 decompressAudio(play_audio_data, play_audio_size);
             }
@@ -31,7 +30,6 @@ class VoiceService {
                 //printf("waiting\n");
                 audio->write_wait_ready();
             }
-            printf("play 3\n");
 
             if (audio->write_underflows(true) != 0){
                 // printf("Playing audio caused an underflow\n");
