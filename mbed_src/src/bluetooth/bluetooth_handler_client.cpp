@@ -19,7 +19,6 @@ void init_bluetooth_client()
 
     //voiceServiceClient.start(ble, mainQueue);
     
-    
     ble_process.on_init(callback(&voiceServiceClient, &VoiceServiceClient::start));
     ble_process.on_connect(callback(&voiceServiceClient, &VoiceServiceClient::start_discovery));
     

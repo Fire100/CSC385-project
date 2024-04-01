@@ -4,6 +4,7 @@
  */
 
 #include "globals.hpp"
+#include "Callback.h"
 #include "recordAudio.hpp"
 #include "bluetooth_handler.hpp"
 #include "bluetooth_handler_client.hpp"
@@ -43,10 +44,13 @@ int main()
 
         mainQueue.call_every(4000ms, callback(voiceService, &VoiceService::sendAudio));
         //record_audio();
+        mainQueue.call_every(4000ms, callback(voiceService, &VoiceService::sendAudio));
         init_bluetooth_client();
     }
     else{
         voiceService = new VoiceServiceServer();
+        mainQueue.call_every(4000ms, callback(voiceService, &VoiceService::sendAudio));
+    
         //record_audio();
         mainQueue.call_every(4000ms, callback(voiceService, &VoiceService::sendAudio));
         init_bluetooth();

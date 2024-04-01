@@ -40,6 +40,7 @@ class VoiceService {
                 free(play_audio_data);
             }
 
+
             play_audio_new = false;
         }
 
@@ -62,7 +63,7 @@ class VoiceService {
 
     public:
         uint8_t* audio_buffer;
-        int audio_buffer_idx = 0;;
+        int audio_buffer_idx = 0;
         static const uint32_t VOICESERVICE_UUID = 0xB000;
         static const uint32_t VOICESERVICE_START_UUID = 0xB001;
         static const uint32_t VOICESERVICE_RECEIVE_AUDIO_UUID = 0xB002;

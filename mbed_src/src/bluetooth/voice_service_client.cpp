@@ -376,4 +376,4 @@ void VoiceServiceClient::sendAudio() {
 //     // ble.gattServer().read(VOICESERVICE_RECEIVE_AUDIO.getValueHandle(), (uint8_t *)&dataIn, sizeof(dataIn));
 //     // dataIn = *(params.data);
 //  
-//}
+// }
