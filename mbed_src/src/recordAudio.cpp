@@ -18,25 +18,13 @@ void target_audio_buffer_full() {
         printf("OK Audio Pause\n");
     }    
 
-    // t.stop();
-    // // printf("Recording time: %llu ms\n", t.elapsed_time().count());
-    // t.reset();
-
-    // // compression
-    // // printf("target full \n");
-
-    // t.start();
 
     if (compressionOn) {
         for (size_t ix = 0; ix < TARGET_AUDIO_BUFFER_NB_SAMPLES; ix++) {
             compressedBuf[ix] = DIO_LinearToALaw(TARGET_AUDIO_BUFFER[ix]);
         }
-        // printf("Compressed: %hu\n", compressedBuf[12]);
-
+       
     }
-
-    //t.stop();
-    // printf("Compression time: %llu ms\n", t.elapsed_time().count());
 
     //might need to to multithreaded locking for updating this node.
     dataUpdated = true;
@@ -62,27 +50,6 @@ void target_audio_buffer_full() {
     };
 
 
-    // print both the WAV header and the audio buffer in HEX format to serial
-    // you can use the script in `hex-to-buffer.js` to make a proper WAV file again
-    // printf("WAV file:\n");
-    // for (size_t ix = 0; ix < 44; ix++) {
-    //     printf("%02x ", wav_header[ix]);
-    // }
-
-    // if (compressionOn) {
-    //     for (size_t ix = 0; ix < TARGET_AUDIO_BUFFER_NB_SAMPLES; ix++) {
-    //         printf("%02x ", compressedBuf[ix]);
-    //     }
-    // }
-    // else {
-    //     uint8_t *buf = (uint8_t*)TARGET_AUDIO_BUFFER;
-    //     for (size_t ix = 0; ix < TARGET_AUDIO_BUFFER_NB_SAMPLES * 2; ix++) {
-    //         printf("%02x ", buf[ix]);
-    //     }
-    // }
-    
-
-    // TODO: Send data in TARGET_AUDIO_BUFFER to bluetooth
     if (compressionOn){
         memcpy(sendBuf, compressedBuf, TARGET_AUDIO_BUFFER_NB_SAMPLES);
         voiceService->sendAudioQueue((uint8_t*)sendBuf, TARGET_AUDIO_BUFFER_NB_SAMPLES);
@@ -92,8 +59,7 @@ void target_audio_buffer_full() {
     
 
     TARGET_AUDIO_BUFFER_IX = 0; // reset audio buffer idx to begin recording agiai
-    // printf("\n");
-    //t.start();
+  
 }
 
 /**
@@ -194,5 +160,4 @@ void record_audio(){
 
     button.fall(set_sending_audio);
 
-    //t.start();
 }

@@ -24,8 +24,10 @@ class VoiceService {
             if (play_audio_decompress){
                 decompressAudio(play_audio_data, play_audio_size);
             }
-
+            printf("play 2\n");
+            
             while (play_audio_new && !audio->write(play_audio_data, play_audio_size)){
+                //printf("waiting\n");
                 audio->write_wait_ready();
             }
 
