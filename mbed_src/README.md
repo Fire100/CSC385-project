@@ -25,16 +25,16 @@ This changes the connection interval to be a few millescond quicker, increasing 
 # How to Run the Project
 
 Steps:
-- Set up microphone input to speaker outuput app on computer
+- Set up a "microphone input to speaker outuput" app on computer
     - For Mac, you can use Loopback
 - Get 2 boards. 
 - For one board, make sure it is a client. Make sure the other board is not a client and is instead a server.
     - To do this, set the CLIENT flag in src/globals.hpp for one of the boards
 - For each board:
-    - connect STLINK to the computer and flash compiled code. 
+    - connect the computer to the STLINK port on the board via USB to flash compiled code. 
     - connect a USB to the USB OTG port on the board.
-- The two boards should have connected. 
+- The two boards should have connected via Bluetooth by now. 
 - When ready, press the USER button on one of the boards to send an audio clip
     - Do not press the buttons on both boards simultaenesouly. This is undefined behavior.
 - Wait until the other board has received the audio clip. This may take ~1 minute
-- You can repeat the above two steps for any of the boards.
+- You can repeat the above two steps for any of the boards indefinitely.
