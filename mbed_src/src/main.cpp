@@ -21,6 +21,7 @@ VoiceService* voiceService;
 int main()
 {
     // mbed_trace_init();
+
     printf("Hello from microphone demo\n");
 
     // set up the microphone
@@ -42,15 +43,13 @@ int main()
     if (CLIENT){
         voiceService = new VoiceServiceClient();
 
-        mainQueue.call_every(4000ms, callback(voiceService, &VoiceService::sendAudio));
         //record_audio();
         mainQueue.call_every(4000ms, callback(voiceService, &VoiceService::sendAudio));
         init_bluetooth_client();
     }
     else{
         voiceService = new VoiceServiceServer();
-        mainQueue.call_every(4000ms, callback(voiceService, &VoiceService::sendAudio));
-    
+   
         //record_audio();
         mainQueue.call_every(4000ms, callback(voiceService, &VoiceService::sendAudio));
         init_bluetooth();
