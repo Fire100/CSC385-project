@@ -42,15 +42,11 @@ int main()
 
     if (CLIENT){
         voiceService = new VoiceServiceClient();
-
-        //record_audio();
         mainQueue.call_every(4000ms, callback(voiceService, &VoiceService::sendAudio));
         init_bluetooth_client();
     }
     else{
         voiceService = new VoiceServiceServer();
-   
-        //record_audio();
         mainQueue.call_every(4000ms, callback(voiceService, &VoiceService::sendAudio));
         init_bluetooth();
     }

@@ -30,26 +30,6 @@ void target_audio_buffer_full() {
     dataUpdated = true;
 
     // create WAV file
-
-    uint32_t byte_rate = wavFreq * BITS_PER_SAMPLE / 8; // (Sample Rate * BitsPerSample * Channels) / 8
-    // TODO: probably don't send this via bluetooth since it's just constant time operations
-    uint8_t wav_header[44] = {
-        0x52, 0x49, 0x46, 0x46, // RIFF
-        (uint8_t) (fileSize & 0xff), (uint8_t)((fileSize >> 8) & 0xff), (uint8_t)((fileSize >> 16) & 0xff), (uint8_t)((fileSize >> 24) & 0xff),
-        0x57, 0x41, 0x56, 0x45, // WAVE
-        0x66, 0x6d, 0x74, 0x20, // fmt
-        0x10, 0x00, 0x00, 0x00, // length of format data
-        0x01, 0x00, // type of format (1=PCM)
-        0x01, 0x00, // number of channels
-        (uint8_t)(wavFreq & 0xff), (uint8_t)((wavFreq >> 8) & 0xff), (uint8_t)((wavFreq >> 16) & 0xff), (uint8_t)((wavFreq >> 24) & 0xff),
-        (uint8_t)(byte_rate & 0xff), (uint8_t)((byte_rate >> 8) & 0xff), (uint8_t)((byte_rate >> 16) & 0xff), (uint8_t)((byte_rate >> 24) & 0xff),
-        (uint8_t)(BITS_PER_SAMPLE/8 & 0xff), (uint8_t)(BITS_PER_SAMPLE/8 >> 8 & 0xff), // (BITS_PER_SAMPLE * channels) / 8
-        (uint8_t)(BITS_PER_SAMPLE & 0xff), (uint8_t)(BITS_PER_SAMPLE >> 8 & 0xff), // BITS_PER_SAMPLE
-        0x64, 0x61, 0x74, 0x61, // data
-        (uint8_t)(dataSize & 0xff), (uint8_t)((dataSize >> 8) & 0xff), (uint8_t)((dataSize >> 16) & 0xff), (uint8_t)((dataSize >> 24) & 0xff),
-    };
-
-
     if (compressionOn){
         memcpy(sendBuf, compressedBuf, TARGET_AUDIO_BUFFER_NB_SAMPLES);
         voiceService->sendAudioQueue((uint8_t*)sendBuf, TARGET_AUDIO_BUFFER_NB_SAMPLES);
