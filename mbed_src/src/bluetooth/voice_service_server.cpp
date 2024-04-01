@@ -70,7 +70,7 @@ void VoiceServiceServer::onUpdatesEnabled(const GattUpdatesEnabledCallbackParams
 
 
 void VoiceServiceServer::sendAudio() {
-    if (buffer_location < 40 && this->sending_audio) {
+    if (buffer_location < voiceService->audio_iteration && this->sending_audio) {
         BLE &ble = BLE::Instance();
         int audioTransferIterations = (int) send_audio_size / AUDIO_TRANSFER_SIZE;
 
